@@ -1,5 +1,6 @@
 /* ============================
    战斗界面（Phase 3 详细开发）
+   占位
    ============================ */
 
 #battle-screen {
@@ -14,4 +15,15 @@
     z-index: var(--z-content);
     width: 100%;
     height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.battle-placeholder {
+    text-align: center;
+    color: var(--color-paper);
+    font-family: var(--font-gothic);
+    font-weight: 300;
+    opacity: 0.4;
 }
