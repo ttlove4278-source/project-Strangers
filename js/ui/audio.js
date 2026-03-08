@@ -1,8 +1,3 @@
-/**
- * 世纪末异邦人 — 音频系统（完整版）
- * Web Audio API 合成环境音 + BGM
- */
-
 const AudioManager = {
     ctx: null,
     masterGain: null,
@@ -11,19 +6,19 @@ const AudioManager = {
     ambientGain: null,
     activeSources: [],
     currentBGM: null,
+    bgmTimeout: null,
     initialized: false,
 
     init() {
         if (this.initialized) return;
         try {
             this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-
             this.masterGain = this.ctx.createGain();
             this.masterGain.gain.value = 0.4;
             this.masterGain.connect(this.ctx.destination);
 
             this.bgmGain = this.ctx.createGain();
-            this.bgmGain.gain.value = 0.3;
+            this.bgmGain.gain.value = 0.25;
             this.bgmGain.connect(this.masterGain);
 
             this.seGain = this.ctx.createGain();
@@ -31,243 +26,96 @@ const AudioManager = {
             this.seGain.connect(this.masterGain);
 
             this.ambientGain = this.ctx.createGain();
-            this.ambientGain.gain.value = 0.35;
+            this.ambientGain.gain.value = 0.3;
             this.ambientGain.connect(this.masterGain);
 
             this.initialized = true;
-        } catch (e) {
-            console.warn('[Audio] Web Audio API 不可用');
-        }
+        } catch (e) {}
     },
 
-    // ===== 环境音 =====
-
+    // 环境音
     playCicada() {
         if (!this.initialized) return;
-        const bufferSize = this.ctx.sampleRate * 2;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * 0.12;
-        }
+        const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 2, this.ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.1;
 
-        const source = this.ctx.createBufferSource();
-        source.buffer = buffer;
-        source.loop = true;
-
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.value = 4500;
-        filter.Q.value = 10;
-
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf; src.loop = true;
+        const flt = this.ctx.createBiquadFilter();
+        flt.type = 'bandpass'; flt.frequency.value = 4500; flt.Q.value = 12;
         const lfo = this.ctx.createOscillator();
-        const lfoGain = this.ctx.createGain();
-        lfo.frequency.value = 0.25;
-        lfoGain.gain.value = 0.06;
-        lfo.connect(lfoGain);
-
-        const gainNode = this.ctx.createGain();
-        gainNode.gain.value = 0.05;
-        lfoGain.connect(gainNode.gain);
-
-        source.connect(filter);
-        filter.connect(gainNode);
-        gainNode.connect(this.ambientGain);
-        lfo.start();
-        source.start();
-
-        this.activeSources.push({ id: 'cicada', source, lfo, gainNode });
+        const lg = this.ctx.createGain();
+        lfo.frequency.value = 0.2; lg.gain.value = 0.05;
+        lfo.connect(lg);
+        const g = this.ctx.createGain(); g.gain.value = 0.04;
+        lg.connect(g.gain);
+        src.connect(flt); flt.connect(g); g.connect(this.ambientGain);
+        lfo.start(); src.start();
+        this.activeSources.push({ id: 'cicada', source: src, lfo, gainNode: g });
     },
 
     playCRTHum() {
         if (!this.initialized) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = 60;
-        gain.gain.value = 0.006;
-        osc.connect(gain);
-        gain.connect(this.ambientGain);
-        osc.start();
-        this.activeSources.push({ id: 'crt', source: osc, gainNode: gain });
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = 'sine'; o.frequency.value = 60; g.gain.value = 0.005;
+        o.connect(g); g.connect(this.ambientGain); o.start();
+        this.activeSources.push({ id: 'crt', source: o, gainNode: g });
     },
 
     playWind() {
         if (!this.initialized) return;
-        const bufferSize = this.ctx.sampleRate * 3;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * 0.08;
-        }
-
-        const source = this.ctx.createBufferSource();
-        source.buffer = buffer;
-        source.loop = true;
-
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 400;
-        filter.Q.value = 1;
-
+        const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 3, this.ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.06;
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf; src.loop = true;
+        const flt = this.ctx.createBiquadFilter();
+        flt.type = 'lowpass'; flt.frequency.value = 350;
         const lfo = this.ctx.createOscillator();
-        const lfoGain = this.ctx.createGain();
-        lfo.frequency.value = 0.1;
-        lfoGain.gain.value = 200;
-        lfo.connect(lfoGain);
-        lfoGain.connect(filter.frequency);
-
-        const gainNode = this.ctx.createGain();
-        gainNode.gain.value = 0.04;
-
-        source.connect(filter);
-        filter.connect(gainNode);
-        gainNode.connect(this.ambientGain);
-        lfo.start();
-        source.start();
-
-        this.activeSources.push({ id: 'wind', source, lfo, gainNode });
+        const lg = this.ctx.createGain();
+        lfo.frequency.value = 0.08; lg.gain.value = 150;
+        lfo.connect(lg); lg.connect(flt.frequency);
+        const g = this.ctx.createGain(); g.gain.value = 0.03;
+        src.connect(flt); flt.connect(g); g.connect(this.ambientGain);
+        lfo.start(); src.start();
+        this.activeSources.push({ id: 'wind', source: src, lfo, gainNode: g });
     },
 
-    // ===== BGM合成 =====
-
-    playNote(freq, startTime, duration, type = 'sine', volume = 0.08) {
+    // 音符
+    playNote(freq, time, dur, type = 'sine', vol = 0.06, dest = null) {
         if (!this.initialized) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.type = type;
-        osc.frequency.value = freq;
-
-        gain.gain.setValueAtTime(0, startTime);
-        gain.gain.linearRampToValueAtTime(volume, startTime + 0.05);
-        gain.gain.setValueAtTime(volume, startTime + duration - 0.1);
-        gain.gain.linearRampToValueAtTime(0, startTime + duration);
-
-        osc.connect(gain);
-        gain.connect(this.bgmGain);
-
-        osc.start(startTime);
-        osc.stop(startTime + duration);
-
-        return osc;
+        dest = dest || this.bgmGain;
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = type; o.frequency.value = freq;
+        g.gain.setValueAtTime(0, time);
+        g.gain.linearRampToValueAtTime(vol, time + Math.min(0.08, dur * 0.1));
+        g.gain.setValueAtTime(vol, time + dur * 0.7);
+        g.gain.linearRampToValueAtTime(0, time + dur);
+        o.connect(g); g.connect(dest);
+        o.start(time); o.stop(time + dur);
+        return o;
     },
 
-    // 标题BGM：极简钢琴，加缪式忧郁
-    playTitleBGM() {
-        if (!this.initialized || this.currentBGM === 'title') return;
-        this.stopBGM();
-        this.currentBGM = 'title';
-
-        const loop = () => {
-            if (this.currentBGM !== 'title') return;
-            const now = this.ctx.currentTime;
-
-            // A小调下行：A4 - G4 - F4 - E4
-            const notes = [
-                { freq: 440.00, time: 0,   dur: 1.8 },  // A4
-                { freq: 392.00, time: 2.2, dur: 1.5 },  // G4
-                { freq: 349.23, time: 4.0, dur: 1.8 },  // F4
-                { freq: 329.63, time: 6.0, dur: 2.5 },  // E4
-                // 高音呼应
-                { freq: 659.25, time: 1.0, dur: 0.8 },  // E5
-                { freq: 587.33, time: 3.2, dur: 0.6 },  // D5
-                { freq: 523.25, time: 5.0, dur: 0.8 },  // C5
-            ];
-
-            notes.forEach(n => {
-                this.playNote(n.freq, now + n.time, n.dur, 'sine', 0.06);
-            });
-
-            setTimeout(loop, 9000);
-        };
-        loop();
+    // 和弦
+    playChord(freqs, time, dur, vol = 0.04) {
+        freqs.forEach(f => this.playNote(f, time, dur, 'sine', vol / freqs.length));
     },
 
-    // 探索BGM：环境音 + 稀疏的音符
-    playExplorationBGM() {
-        if (!this.initialized || this.currentBGM === 'explore') return;
-        this.stopBGM();
-        this.currentBGM = 'explore';
-
-        const loop = () => {
-            if (this.currentBGM !== 'explore') return;
-            const now = this.ctx.currentTime;
-
-            // 随机选取几个音
-            const scale = [329.63, 349.23, 392.00, 440.00, 493.88, 523.25, 587.33];
-            const count = 2 + Math.floor(Math.random() * 3);
-
-            for (let i = 0; i < count; i++) {
-                const freq = scale[Math.floor(Math.random() * scale.length)];
-                const time = Math.random() * 6;
-                const dur = 1 + Math.random() * 2;
-                this.playNote(freq, now + time, dur, 'sine', 0.03 + Math.random() * 0.03);
-            }
-
-            setTimeout(loop, 7000 + Math.random() * 5000);
-        };
-
-        setTimeout(loop, 2000);
-    },
-
-    // 对话BGM：更安静，偶尔一个音
-    playDialogueBGM() {
-        if (!this.initialized || this.currentBGM === 'dialogue') return;
-        this.stopBGM();
-        this.currentBGM = 'dialogue';
-
-        const loop = () => {
-            if (this.currentBGM !== 'dialogue') return;
-            const now = this.ctx.currentTime;
-
-            const notes = [329.63, 440.00, 523.25, 659.25];
-            const freq = notes[Math.floor(Math.random() * notes.length)];
-            this.playNote(freq, now + Math.random() * 2, 2 + Math.random() * 2, 'sine', 0.025);
-
-            setTimeout(loop, 8000 + Math.random() * 8000);
-        };
-
-        setTimeout(loop, 3000);
-    },
-
-    // 紧张BGM：低音持续 + 不协和音
-    playTenseBGM() {
-        if (!this.initialized || this.currentBGM === 'tense') return;
-        this.stopBGM();
-        this.currentBGM = 'tense';
-
-        // 低音持续drone
-        const drone = this.ctx.createOscillator();
-        const droneGain = this.ctx.createGain();
-        drone.type = 'sawtooth';
-        drone.frequency.value = 55; // A1
-        droneGain.gain.value = 0.02;
-        drone.connect(droneGain);
-        droneGain.connect(this.bgmGain);
-        drone.start();
-        this.activeSources.push({ id: 'tense-drone', source: drone, gainNode: droneGain });
-
-        const loop = () => {
-            if (this.currentBGM !== 'tense') return;
-            const now = this.ctx.currentTime;
-
-            // 不协和音程
-            const dissonant = [116.54, 123.47, 233.08, 246.94]; // Bb2, B2, Bb3, B3
-            const freq = dissonant[Math.floor(Math.random() * dissonant.length)];
-            this.playNote(freq, now, 1.5, 'triangle', 0.04);
-
-            setTimeout(loop, 3000 + Math.random() * 4000);
-        };
-
-        setTimeout(loop, 1000);
+    // BGM生成
+    _bgmLoop(id, fn, interval) {
+        if (this.currentBGM !== id) return;
+        fn();
+        this.bgmTimeout = setTimeout(() => this._bgmLoop(id, fn, interval), interval);
     },
 
     stopBGM() {
         this.currentBGM = null;
-        // 停止BGM相关源
+        if (this.bgmTimeout) { clearTimeout(this.bgmTimeout); this.bgmTimeout = null; }
         this.activeSources = this.activeSources.filter(s => {
-            if (s.id && s.id.startsWith('tense')) {
+            if (s.id && s.id.startsWith('bgm-')) {
                 try { s.source.stop(); } catch(e) {}
                 return false;
             }
@@ -275,81 +123,177 @@ const AudioManager = {
         });
     },
 
-    // ===== 音效 =====
+    // 标题：A小调下行 + 高音回声
+    playTitleBGM() {
+        if (this.currentBGM === 'title') return;
+        this.stopBGM(); this.currentBGM = 'title';
+        this._bgmLoop('title', () => {
+            const t = this.ctx.currentTime;
+            const melody = [
+                [440, 0, 2], [392, 2.5, 1.8], [349.23, 4.5, 2], [329.63, 6.8, 3],
+                [659.25, 1.2, 0.8], [587.33, 3.5, 0.6], [523.25, 5.5, 0.8],
+            ];
+            melody.forEach(([f, s, d]) => this.playNote(f, t + s, d, 'sine', 0.05));
+        }, 10000);
+    },
 
+    // 探索·堤防：海風感。C大调的開放5度
+    playTeibowBGM() {
+        if (this.currentBGM === 'teibow') return;
+        this.stopBGM(); this.currentBGM = 'teibow';
+        this._bgmLoop('teibow', () => {
+            const t = this.ctx.currentTime;
+            const pool = [261.63, 329.63, 392, 523.25, 659.25];
+            for (let i = 0; i < 3; i++) {
+                const f = pool[Math.floor(Math.random() * pool.length)];
+                const s = Math.random() * 7;
+                this.playNote(f, t + s, 2 + Math.random() * 2, 'sine', 0.03);
+            }
+        }, 8000);
+    },
+
+    // 探索·图书馆：静谧。高音E + 空间感
+    playLibraryBGM() {
+        if (this.currentBGM === 'library') return;
+        this.stopBGM(); this.currentBGM = 'library';
+        this._bgmLoop('library', () => {
+            const t = this.ctx.currentTime;
+            this.playNote(659.25, t + Math.random() * 5, 3, 'sine', 0.02);
+            if (Math.random() > 0.5) {
+                this.playNote(493.88, t + 3 + Math.random() * 3, 2, 'sine', 0.015);
+            }
+        }, 10000);
+    },
+
+    // 探索·站前：人声杂感。短促音
+    playStationBGM() {
+        if (this.currentBGM === 'station') return;
+        this.stopBGM(); this.currentBGM = 'station';
+        this._bgmLoop('station', () => {
+            const t = this.ctx.currentTime;
+            const notes = [349.23, 392, 440, 493.88, 523.25];
+            for (let i = 0; i < 4; i++) {
+                const f = notes[Math.floor(Math.random() * notes.length)];
+                this.playNote(f, t + Math.random() * 5, 0.3 + Math.random() * 0.5, 'triangle', 0.02);
+            }
+        }, 6000);
+    },
+
+    // 探索·高架桥：沉重。低音持续
+    playBridgeBGM() {
+        if (this.currentBGM === 'bridge') return;
+        this.stopBGM(); this.currentBGM = 'bridge';
+        this._bgmLoop('bridge', () => {
+            const t = this.ctx.currentTime;
+            this.playNote(110, t, 5, 'sine', 0.03);
+            this.playNote(164.81, t + 2, 3, 'sine', 0.02);
+            if (Math.random() > 0.6) {
+                this.playNote(220, t + 4, 2, 'triangle', 0.015);
+            }
+        }, 8000);
+    },
+
+    // 探索·夜晚：全地点共通夜曲
+    playNightBGM() {
+        if (this.currentBGM === 'night') return;
+        this.stopBGM(); this.currentBGM = 'night';
+        this._bgmLoop('night', () => {
+            const t = this.ctx.currentTime;
+            const scale = [220, 261.63, 293.66, 329.63, 392, 440];
+            const f = scale[Math.floor(Math.random() * scale.length)];
+            this.playNote(f, t + Math.random() * 8, 3 + Math.random() * 3, 'sine', 0.02);
+        }, 10000);
+    },
+
+    // 对话：极简
+    playDialogueBGM() {
+        if (this.currentBGM === 'dialogue') return;
+        this.stopBGM(); this.currentBGM = 'dialogue';
+        this._bgmLoop('dialogue', () => {
+            const t = this.ctx.currentTime;
+            const notes = [329.63, 440, 523.25, 659.25];
+            const f = notes[Math.floor(Math.random() * notes.length)];
+            this.playNote(f, t + Math.random() * 3, 2 + Math.random() * 2, 'sine', 0.02);
+        }, 12000);
+    },
+
+    // 紧张：低音drone + 不协和
+    playTenseBGM() {
+        if (this.currentBGM === 'tense') return;
+        this.stopBGM(); this.currentBGM = 'tense';
+
+        const drone = this.ctx.createOscillator();
+        const dg = this.ctx.createGain();
+        drone.type = 'sawtooth'; drone.frequency.value = 55; dg.gain.value = 0.015;
+        drone.connect(dg); dg.connect(this.bgmGain); drone.start();
+        this.activeSources.push({ id: 'bgm-drone', source: drone, gainNode: dg });
+
+        this._bgmLoop('tense', () => {
+            const t = this.ctx.currentTime;
+            const dis = [116.54, 123.47, 233.08, 246.94];
+            this.playNote(dis[Math.floor(Math.random() * dis.length)], t, 1.5, 'triangle', 0.03);
+        }, 4000);
+    },
+
+    // 音效
     playClick() {
         if (!this.initialized) return;
-        const now = this.ctx.currentTime;
-        this.playNote(800, now, 0.05, 'square', 0.03);
-        this.playNote(600, now + 0.03, 0.04, 'square', 0.02);
+        const t = this.ctx.currentTime;
+        this.playNote(800, t, 0.04, 'square', 0.025, this.seGain);
+        this.playNote(600, t + 0.025, 0.03, 'square', 0.015, this.seGain);
     },
 
     playPageTurn() {
         if (!this.initialized) return;
-        const bufferSize = this.ctx.sampleRate * 0.15;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            const t = i / bufferSize;
-            data[i] = (Math.random() * 2 - 1) * 0.3 * (1 - t);
-        }
-        const source = this.ctx.createBufferSource();
-        source.buffer = buffer;
-
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'highpass';
-        filter.frequency.value = 2000;
-
-        const gain = this.ctx.createGain();
-        gain.gain.value = 0.06;
-
-        source.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.seGain);
-        source.start();
+        const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.12, this.ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.2 * (1 - i / d.length);
+        const src = this.ctx.createBufferSource(); src.buffer = buf;
+        const flt = this.ctx.createBiquadFilter(); flt.type = 'highpass'; flt.frequency.value = 2500;
+        const g = this.ctx.createGain(); g.gain.value = 0.05;
+        src.connect(flt); flt.connect(g); g.connect(this.seGain); src.start();
     },
 
     playImpact() {
         if (!this.initialized) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(150, now);
-        osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-        osc.connect(gain);
-        gain.connect(this.seGain);
-        osc.start(now);
-        osc.stop(now + 0.4);
+        const t = this.ctx.currentTime;
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(150, t);
+        o.frequency.exponentialRampToValueAtTime(30, t + 0.3);
+        g.gain.setValueAtTime(0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+        o.connect(g); g.connect(this.seGain); o.start(t); o.stop(t + 0.4);
     },
 
-    // ===== 控制 =====
+    // 根据地点自动选BGM
+    playLocationBGM(locationId, timeOfDay) {
+        if (timeOfDay === 'night') { this.playNightBGM(); return; }
+        const map = {
+            teibow: 'playTeibowBGM',
+            vendingMachine: 'playTeibowBGM',
+            school: 'playStationBGM',
+            library: 'playLibraryBGM',
+            stationPlaza: 'playStationBGM',
+            bridge: 'playBridgeBGM',
+            shrine: 'playBridgeBGM',
+            convenience: 'playNightBGM',
+        };
+        const fn = map[locationId];
+        if (fn && this[fn]) this[fn]();
+        else this.playTeibowBGM();
+    },
 
     stopAll() {
-        this.currentBGM = null;
+        this.stopBGM();
         this.activeSources.forEach(s => {
             try { if (s.source) s.source.stop(); if (s.lfo) s.lfo.stop(); } catch(e) {}
         });
         this.activeSources = [];
     },
 
-    stopAmbient() {
-        this.activeSources = this.activeSources.filter(s => {
-            if (s.id === 'cicada' || s.id === 'wind' || s.id === 'crt') {
-                try { s.source.stop(); if (s.lfo) s.lfo.stop(); } catch(e) {}
-                return false;
-            }
-            return true;
-        });
-    },
-
     setMasterVolume(v) {
         if (this.masterGain) this.masterGain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.1);
-    },
-
-    setBGMVolume(v) {
-        if (this.bgmGain) this.bgmGain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.1);
     }
 };
