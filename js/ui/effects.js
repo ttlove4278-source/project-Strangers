@@ -1,51 +1,35 @@
-/**
- * 世纪末异邦人 — UI特效（完整版）
- */
-
 const Effects = {
-
     typewriterAbort: false,
-
-    async typeText(element, text, speed = 'normal') {
-        const speeds = { slow: 55, normal: 30, fast: 12, instant: 0 };
-        const delay = speeds[speed] || speeds.normal;
+    async typeText(el, text, speed = 'normal') {
+        const sp = { slow: 55, normal: 30, fast: 12, instant: 0 };
+        const d = sp[speed] || sp.normal;
         this.typewriterAbort = false;
-        element.textContent = '';
-
-        if (delay === 0) { element.textContent = text; return; }
-
+        el.textContent = '';
+        if (d === 0) { el.textContent = text; return; }
         for (let i = 0; i < text.length; i++) {
-            if (this.typewriterAbort) { element.textContent = text; return; }
-            element.textContent += text[i];
+            if (this.typewriterAbort) { el.textContent = text; return; }
+            el.textContent += text[i];
             const c = text[i];
-            let p = delay;
-            if ('。！？'.includes(c)) p = delay * 5;
-            else if ('、；：'.includes(c)) p = delay * 2.5;
-            else if ('…'.includes(c)) p = delay * 3;
-            else if ('—'.includes(c)) p = delay * 3;
-            else if ('「」『』'.includes(c)) p = delay * 1.5;
-            else if (c === '\n') p = delay * 4;
+            let p = d;
+            if ('。！？'.includes(c)) p = d * 5;
+            else if ('、；：'.includes(c)) p = d * 2.5;
+            else if ('…—'.includes(c)) p = d * 3;
+            else if ('「」『』'.includes(c)) p = d * 1.5;
+            else if (c === '\n') p = d * 4;
             await this.wait(p);
         }
     },
-
     skipTypewriter() { this.typewriterAbort = true; },
-
     setDeathCounter(count) {
-        const str = String(count).padStart(3, '0');
-        for (let i = 0; i < 3; i++) {
-            const d = document.getElementById(`digit-${i}`);
-            if (d) d.textContent = str[i];
-        }
+        const s = String(count).padStart(3, '0');
+        for (let i = 0; i < 3; i++) { const d = document.getElementById(`digit-${i}`); if (d) d.textContent = s[i]; }
     },
-
-    updateLogos(current, max) {
-        const fill = document.getElementById('logos-fill');
-        const value = document.getElementById('logos-value');
-        if (fill) fill.style.width = `${(current / max) * 100}%`;
-        if (value) value.textContent = `${current.toFixed(1)} 赫`;
+    updateLogos(cur, max) {
+        const f = document.getElementById('logos-fill');
+        const v = document.getElementById('logos-value');
+        if (f) f.style.width = `${(cur / max) * 100}%`;
+        if (v) v.textContent = `${cur.toFixed(1)} 赫`;
     },
-
     updateStatusBar(date, time, temp) {
         const d = document.getElementById('current-date');
         const t = document.getElementById('current-time');
@@ -54,32 +38,24 @@ const Effects = {
         if (t) t.textContent = time;
         if (tp) tp.textContent = temp + '℃';
     },
-
     shake(el = document.body) {
         el.classList.add('screen-shake');
-        AudioManager.playImpact();
+        if (typeof AudioManager !== 'undefined') AudioManager.playImpact();
         setTimeout(() => el.classList.remove('screen-shake'), 300);
     },
-
     flash() {
         const el = document.getElementById('screen-flash');
         if (!el) return;
-        el.classList.remove('active');
-        void el.offsetWidth;
-        el.classList.add('active');
+        el.classList.remove('active'); void el.offsetWidth; el.classList.add('active');
         setTimeout(() => el.classList.remove('active'), 600);
     },
-
-    async notify(text, duration = 2500) {
+    async notify(text, dur = 2500) {
         const el = document.getElementById('notification');
         if (!el) return;
-        el.textContent = text;
-        el.classList.add('show');
-        AudioManager.playClick();
-        await this.wait(duration);
-        el.classList.remove('show');
+        el.textContent = text; el.classList.add('show');
+        if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+        await this.wait(dur); el.classList.remove('show');
     },
-
     spawnLogosParticles(x, y, count = 5) {
         const chars = '存在虚无意义荒谬自由命题逻各斯深渊超人理性洞穴真理西西弗';
         for (let i = 0; i < count; i++) {
@@ -93,8 +69,9 @@ const Effects = {
             setTimeout(() => p.remove(), 2500);
         }
     },
-
     spawnCicadaRipple() {
+        const scr = SceneManager.getCurrentId();
+        if (scr === 'battle-screen') return;
         const r = document.createElement('div');
         r.className = 'cicada-ripple';
         r.style.left = (Math.random() * window.innerWidth) + 'px';
@@ -102,105 +79,52 @@ const Effects = {
         document.body.appendChild(r);
         setTimeout(() => r.remove(), 3000);
     },
-
-    // ===== 演出系统 =====
-
     async showChapterCard(number, title, subtitle) {
-        const card = document.createElement('div');
-        card.className = 'chapter-card';
-        card.innerHTML = `
-            <div class="chapter-number">${number}</div>
-            <div class="chapter-line"></div>
-            <div class="chapter-title">${title}</div>
-            <div class="chapter-subtitle">${subtitle || ''}</div>
-        `;
-        document.body.appendChild(card);
-
-        await this.wait(50);
-        card.classList.add('visible');
-        AudioManager.playPageTurn();
-        await this.wait(3500);
-        card.classList.remove('visible');
-        await this.wait(800);
-        card.remove();
+        const c = document.createElement('div');
+        c.className = 'chapter-card';
+        c.innerHTML = `<div class="chapter-number">${number}</div><div class="chapter-line"></div><div class="chapter-title">${title}</div><div class="chapter-subtitle">${subtitle || ''}</div>`;
+        document.body.appendChild(c);
+        await this.wait(50); c.classList.add('visible');
+        if (typeof AudioManager !== 'undefined') AudioManager.playPageTurn();
+        await this.wait(3500); c.classList.remove('visible');
+        await this.wait(800); c.remove();
     },
-
     async showCharacterCard(nameJp, nameEn, source) {
-        const card = document.createElement('div');
-        card.className = 'character-card';
-        card.innerHTML = `
-            <div class="character-card-inner">
-                <div class="char-name-jp">${nameJp}</div>
-                <div class="char-line"></div>
-                <div class="char-name-en">${nameEn}</div>
-                <div class="char-source">${source}</div>
-            </div>
-        `;
-        document.body.appendChild(card);
-
-        await this.wait(50);
-        card.classList.add('visible');
-        AudioManager.playClick();
-        await this.wait(2500);
-        card.classList.remove('visible');
-        await this.wait(600);
-        card.remove();
+        const c = document.createElement('div');
+        c.className = 'character-card';
+        c.innerHTML = `<div><div class="char-name-jp">${nameJp}</div><div class="char-line"></div><div class="char-name-en">${nameEn}</div><div class="char-source">${source}</div></div>`;
+        document.body.appendChild(c);
+        await this.wait(50); c.classList.add('visible');
+        if (typeof AudioManager !== 'undefined') AudioManager.playClick();
+        await this.wait(2500); c.classList.remove('visible');
+        await this.wait(600); c.remove();
     },
-
-    async showFullscreenText(text, duration = 3000) {
+    async showFullscreenText(text, dur = 3000) {
         const el = document.createElement('div');
         el.className = 'fullscreen-text';
         el.innerHTML = `<p>${text}</p>`;
         document.body.appendChild(el);
-
-        await this.wait(50);
-        el.classList.add('visible');
-        await this.wait(duration);
-        el.classList.remove('visible');
-        await this.wait(600);
-        el.remove();
+        await this.wait(50); el.classList.add('visible');
+        await this.wait(dur); el.classList.remove('visible');
+        await this.wait(600); el.remove();
     },
-
     async showDateCard(dateStr, dayOfWeek, temp, remaining) {
-        const card = document.createElement('div');
-        card.className = 'date-card';
-        card.innerHTML = `
-            <div class="date-main">${dateStr}</div>
-            <div class="date-day">${dayOfWeek}</div>
-            <div class="date-temp-display">${temp}℃</div>
-            ${remaining ? `<div class="date-remaining">${remaining}</div>` : ''}
-        `;
-        document.body.appendChild(card);
-
-        await this.wait(50);
-        card.classList.add('visible');
-        await this.wait(2800);
-        card.classList.remove('visible');
-        await this.wait(600);
-        card.remove();
+        const c = document.createElement('div');
+        c.className = 'date-card';
+        c.innerHTML = `<div class="date-main">${dateStr}</div><div class="date-day">${dayOfWeek}</div><div class="date-temp-display">${temp}℃</div>${remaining ? `<div class="date-remaining">${remaining}</div>` : ''}`;
+        document.body.appendChild(c);
+        await this.wait(50); c.classList.add('visible');
+        await this.wait(2800); c.classList.remove('visible');
+        await this.wait(600); c.remove();
     },
-
-    updateCountdown(mikuriyaDays) {
-        let badge = document.getElementById('countdown-badge');
-        if (!badge) {
-            badge = document.createElement('div');
-            badge.className = 'countdown-badge';
-            badge.id = 'countdown-badge';
-            document.body.appendChild(badge);
-        }
-        if (mikuriyaDays !== null && mikuriyaDays !== undefined) {
-            badge.innerHTML = `御厨光 — 残り <span class="countdown-num">${mikuriyaDays}</span> 日`;
-            badge.classList.add('visible');
-        } else {
-            badge.classList.remove('visible');
-        }
+    updateCountdown(days) {
+        let b = document.getElementById('countdown-badge');
+        if (!b) { b = document.createElement('div'); b.className = 'countdown-badge'; b.id = 'countdown-badge'; document.body.appendChild(b); }
+        if (days !== null && days !== undefined) {
+            b.innerHTML = `御厨光 — 残り <span class="countdown-num">${days}</span> 日`;
+            b.classList.add('visible');
+        } else { b.classList.remove('visible'); }
     },
-
     wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 };
-
-// 定期蝉鸣波纹
-setInterval(() => {
-    const active = document.querySelector('#exploration-screen.active') || document.querySelector('#title-screen.active');
-    if (active) Effects.spawnCicadaRipple();
-}, 4000 + Math.random() * 6000);
+setInterval(() => { Effects.spawnCicadaRipple(); }, 5000 + Math.random() * 5000);
