@@ -5,13 +5,14 @@
 const ExplorationEngine = {
     gameState: null,
     currentLocation: null,
+    completedActionsThisVisit: [],
 
-    init(gameState) {
-        this.gameState = gameState;
-    },
+    init(gameState) { this.gameState = gameState; },
 
     async enter(locationId) {
         locationId = locationId || this.gameState.currentLocation || 'teibow';
+        this.completedActionsThisVisit = [];
+
         if (SceneManager.getCurrentId() !== 'exploration-screen') {
             await SceneManager.switchTo('exploration-screen', 'fade');
             await Effects.wait(200);
@@ -25,6 +26,7 @@ const ExplorationEngine = {
 
         this.currentLocation = loc;
         this.gameState.currentLocation = locationId;
+        this.completedActionsThisVisit = [];
 
         if (SceneManager.getCurrentId() === 'exploration-screen') {
             await Transitions.locationChange();
@@ -35,6 +37,7 @@ const ExplorationEngine = {
         this.updateActions(loc);
         this.updateNavigation(loc);
         this.updateBottomBar();
+        this.updateCountdownDisplay();
 
         if (!this.gameState.visitedLocations.includes(locationId)) {
             this.gameState.visitedLocations.push(locationId);
@@ -95,98 +98,93 @@ const ExplorationEngine = {
         area.innerHTML = '';
         if (!loc.actions) return;
 
-        let index = 0;
-        loc.actions.forEach((action) => {
+        let idx = 0;
+        loc.actions.forEach(action => {
             if (action.condition && !action.condition(this.gameState)) return;
+            if (this.completedActionsThisVisit.includes(action.id)) return;
 
             const btn = document.createElement('button');
             btn.className = 'action-btn';
             if (action.important) btn.classList.add('important');
             btn.textContent = action.text;
-            btn.style.animationDelay = (index * 0.06) + 's';
+            btn.style.animationDelay = (idx * 0.06) + 's';
             btn.classList.add('fade-in-up');
 
-            btn.addEventListener('click', () => this.executeAction(action));
+            btn.addEventListener('click', () => {
+                AudioManager.playClick();
+                this.executeAction(action);
+            });
             area.appendChild(btn);
-            index++;
+            idx++;
         });
     },
 
     async executeAction(action) {
-        // 特殊场景：御厨光初次相遇
-        if (action.scene === 'talk_mikuriya_first') {
-            await this.triggerMikuriyaMeeting();
-            return;
-        }
+        this.completedActionsThisVisit.push(action.id);
 
-        // 特殊场景：御厨光第二天深谈
-        if (action.scene === 'talk_mikuriya_day2') {
-            await this.playScript(StoryScripts.talk_mikuriya_day2, () => {
-                this.gameState.flags.mikuriya_day2_talked = true;
-                this.gameState.flags.mikuriya_revealed_truth = true;
-                // 解锁神社和便利店
-                if (!this.gameState.unlockedLocations.includes('shrine')) {
-                    this.gameState.unlockedLocations.push('shrine');
+        // 特殊场景路由
+        const specialHandlers = {
+            'talk_mikuriya_first': () => this.triggerMikuriyaMeeting(),
+            'talk_mikuriya_day2': () => this.playScriptWithCallback(
+                StoryScripts.talk_mikuriya_day2,
+                () => {
+                    this.gameState.flags.mikuriya_day2_talked = true;
+                    this.gameState.flags.mikuriya_revealed_truth = true;
+                    this.unlockLocations(['shrine', 'convenience']);
+                    Effects.notify('真相の一端に触れた', 2000);
                 }
-                if (!this.gameState.unlockedLocations.includes('convenience')) {
-                    this.gameState.unlockedLocations.push('convenience');
+            ),
+            'approach_bentham': () => this.playScriptWithCallback(
+                StoryScripts.approach_bentham,
+                () => {
+                    this.gameState.flags.bentham_confronted = true;
+                    this.gameState.flags.nine_contact = true;
+                    Effects.notify('九課と接触した', 2000);
                 }
-                Effects.notify('真相の一端に触れた', 2000);
-            });
-            return;
-        }
-
-        // 特殊场景：边沁遭遇
-        if (action.scene === 'approach_bentham') {
-            await this.playScript(StoryScripts.approach_bentham, () => {
-                this.gameState.flags.bentham_confronted = true;
-                this.gameState.flags.nine_contact = true;
-                Effects.notify('九課と接触した', 2000);
-            });
-            return;
-        }
-
-        // 特殊场景：跟随高城黎
-        if (action.scene === 'follow_takashiro') {
-            await this.playScript(StoryScripts.follow_takashiro, () => {
-                this.gameState.flags.talked_takashiro_school = true;
-                // 解锁神社
-                if (!this.gameState.unlockedLocations.includes('shrine')) {
-                    this.gameState.unlockedLocations.push('shrine');
+            ),
+            'follow_takashiro': () => this.playScriptWithCallback(
+                StoryScripts.follow_takashiro,
+                () => {
+                    this.gameState.flags.talked_takashiro_school = true;
+                    this.unlockLocations(['shrine']);
+                    Effects.notify('高城黎を記録した', 2000);
                 }
-                Effects.notify('高城黎を記録した', 2000);
-            });
-            return;
-        }
+            ),
+            'teibow_evening_mikuriya': () => this.playScriptWithCallback(
+                StoryScripts.teibow_evening_mikuriya,
+                () => {
+                    this.gameState.flags.evening_mikuriya_teibow = true;
+                    Effects.notify('距離が近づいた', 2000);
+                }
+            ),
+            'thursday_kids': () => this.playScriptWithCallback(
+                StoryScripts.thursday_kids,
+                () => { this.gameState.flags.saw_thursday_kids = true; }
+            ),
+        };
 
-        // 特殊场景：堤防傍晚御厨光
-        if (action.scene === 'teibow_evening_mikuriya') {
-            await this.playScript(StoryScripts.teibow_evening_mikuriya, () => {
-                this.gameState.flags.evening_mikuriya_teibow = true;
-                Effects.notify('距離が近づいた', 2000);
-            });
-            return;
-        }
-
-        // 特殊场景：星期四孩子们
-        if (action.scene === 'thursday_kids') {
-            await this.playScript(StoryScripts.thursday_kids, () => {
-                this.gameState.flags.saw_thursday_kids = true;
-            });
+        if (specialHandlers[action.scene]) {
+            await specialHandlers[action.scene]();
             return;
         }
 
         // 通用脚本
         const script = StoryScripts[action.scene];
         if (script) {
-            await this.playScript(script, () => {
-                if (action.effect) action.effect(this.gameState);
+            await this.playScriptWithCallback(script, () => {
                 if (action.setFlag) this.gameState.flags[action.setFlag] = true;
+                // 逻各斯恢复
+                if (action.logosGain) {
+                    this.gameState.player.logos = Math.min(
+                        this.gameState.player.maxLogos,
+                        this.gameState.player.logos + action.logosGain
+                    );
+                }
             });
         }
     },
 
-    async playScript(script, onComplete) {
+    async playScriptWithCallback(script, onComplete) {
         await DialogueEngine.play(script, () => {
             if (onComplete) onComplete();
             SaveManager.save(this.gameState);
@@ -204,19 +202,19 @@ const ExplorationEngine = {
         hint.textContent = '移动';
         area.appendChild(hint);
 
-        loc.connections.forEach((connId) => {
+        loc.connections.forEach(connId => {
             if (!this.gameState.unlockedLocations.includes(connId)) return;
             const connLoc = LocationData[connId];
             if (!connLoc) return;
 
             const btn = document.createElement('button');
             btn.className = 'nav-btn';
-
             if (this.hasNewEvent(connId)) btn.classList.add('has-event');
             if (!this.gameState.visitedLocations.includes(connId)) btn.classList.add('new');
 
             btn.innerHTML = `<span class="nav-icon">→</span> ${connLoc.name}`;
             btn.addEventListener('click', () => {
+                AudioManager.playPageTurn();
                 this.advanceTime();
                 this.loadLocation(connId);
             });
@@ -239,25 +237,41 @@ const ExplorationEngine = {
         document.getElementById('death-count-display').textContent = this.gameState.deathCount;
     },
 
+    updateCountdownDisplay() {
+        if (this.gameState.flags.met_mikuriya) {
+            const mikuriyaStart = 33;
+            const daysPassed = this.gameState.dayIndex || 0;
+            const remaining = Math.max(0, 42 - mikuriyaStart - daysPassed);
+            Effects.updateCountdown(remaining);
+        } else {
+            Effects.updateCountdown(null);
+        }
+    },
+
+    unlockLocations(ids) {
+        ids.forEach(id => {
+            if (!this.gameState.unlockedLocations.includes(id)) {
+                this.gameState.unlockedLocations.push(id);
+            }
+        });
+    },
+
     advanceTime() {
         let [h, m] = this.gameState.currentTime.split(':').map(Number);
         m += 20;
         if (m >= 60) { m -= 60; h += 1; }
 
-        // 日期推进
-        if (h >= 24) {
+        if (h >= 23) {
             h = 8;
             this.advanceDay();
         }
 
         this.gameState.currentTime = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 
-        // 时段判断
         if (h >= 6 && h < 16) this.gameState.timeOfDay = 'day';
         else if (h >= 16 && h < 19) this.gameState.timeOfDay = 'evening';
         else this.gameState.timeOfDay = 'night';
 
-        // 温度变化
         if (this.gameState.timeOfDay === 'day') {
             this.gameState.currentTemp = Math.round((36.5 + Math.random() * 2) * 10) / 10;
         } else if (this.gameState.timeOfDay === 'evening') {
@@ -265,9 +279,15 @@ const ExplorationEngine = {
         } else {
             this.gameState.currentTemp = Math.round((26 + Math.random() * 3) * 10) / 10;
         }
+
+        // 逻各斯微恢复
+        this.gameState.player.logos = Math.min(
+            this.gameState.player.maxLogos,
+            this.gameState.player.logos + 0.1
+        );
     },
 
-    advanceDay() {
+    async advanceDay() {
         this.gameState.dayIndex = (this.gameState.dayIndex || 0) + 1;
         const base = new Date('1999-07-13');
         base.setDate(base.getDate() + this.gameState.dayIndex);
@@ -276,18 +296,31 @@ const ExplorationEngine = {
         const d = String(base.getDate()).padStart(2, '0');
         this.gameState.currentDay = `${y}-${mo}-${d}`;
 
-        Effects.notify(`${y}.${mo}.${d} — 新的一天`, 2500);
+        const days = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
+        const dayName = days[base.getDay()];
+        const temp = Math.round((36 + Math.random() * 2.5) * 10) / 10;
+
+        // 倒计时
+        let remaining = null;
+        if (this.gameState.flags.met_mikuriya) {
+            const mikuriyaDays = Math.max(0, 42 - 33 - this.gameState.dayIndex);
+            remaining = `御厨光の予後 — 残り ${mikuriyaDays} 日`;
+        }
+
+        await Effects.showDateCard(`${y}.${mo}.${d}`, dayName, temp, remaining);
     },
 
     formatDate(dateStr) {
         const days = ['日', '月', '火', '水', '木', '金', '土'];
         const d = new Date(dateStr);
-        const dayName = days[d.getDay()];
-        return dateStr.replace(/-/g, '.') + ` (${dayName})`;
+        return dateStr.replace(/-/g, '.') + ` (${days[d.getDay()]})`;
     },
 
     // 御厨光初次相遇
     async triggerMikuriyaMeeting() {
+        // 角色登场卡
+        await Effects.showCharacterCard('御厨 光', 'Mikuriya Hikaru', '柏拉图 —「世界是投影。」');
+
         const script = [
             { speaker: null, text: '图书馆的角落。最里面的书架旁边。', atmosphere: '空调声。翻页声。很远的蝉鸣。' },
             { speaker: null, text: '一个女生坐在地上，靠着书架。膝盖上放着一本打开的书。' },
@@ -303,43 +336,37 @@ const ExplorationEngine = {
                     { text: '（坐在旁边的书架前，不说话）', bondChange: { mikuriya: 2 }, next: 9 },
                 ]
             },
-            // 6: 搭话
+            // 6
             { speaker: '御厨光', text: '「…………嗯。」' },
             { speaker: null, text: '她的声音很小。像是不习惯被人搭话。' },
             {
-                speaker: '御厨光',
-                text: '「你也看哲学书吗？」',
+                speaker: '御厨光', text: '「你也看哲学书吗？」',
                 choices: [
                     { text: '「算是吧。加缪。」', bondChange: { mikuriya: 1 }, next: 15 },
                     { text: '「不看。只是路过。」', next: 13 },
                 ]
             },
-            // 9: 坐在旁边
+            // 9
             { speaker: null, text: '你靠着对面的书架坐下来。\n没有说话。她也没有说话。' },
             { speaker: null, text: '空调声。翻页声。\n时间过去了——也许五分钟，也许半小时。' },
             { speaker: '御厨光', text: '「……你不问我在看什么吗？」' },
             {
-                speaker: null,
-                text: '她的声音比你想象的要轻。像是在确认你真的在那里。',
+                speaker: null, text: '她的声音比你想象的要轻。像是在确认你真的在那里。',
                 choices: [
                     { text: '「不想看就不看。」', bondChange: { mikuriya: 3 }, setFlag: 'said_dont_look', next: 15 },
                     { text: '「在看柏拉图？」', bondChange: { mikuriya: 1 }, next: 15 },
                 ]
             },
-            // 13: 离开
+            // 13
             { speaker: null, text: '你转身离开。\n她的视线在你背后停留了一秒。\n然后，翻页声又响了。' },
-            {
-                speaker: null,
-                text: '——你错过了什么。\n但你不知道你错过了什么。'
-            },
-            // 15: 对话展开
+            { speaker: null, text: '——你错过了什么。\n但你不知道你错过了什么。' },
+            // 15
             { speaker: null, text: '她抬起头，看了你一眼。\n这一次看得久了一点。' },
             { speaker: '御厨光', text: '「柏拉图说——我们看见的一切都是影子。」' },
             { speaker: '御厨光', text: '「我从小就觉得……这个世界像投影。走在路上，忽然觉得一切都不太真实。」' },
             { speaker: null, text: '她把书合上。塑料海豚挂件晃了一下。' },
             {
-                speaker: '御厨光',
-                text: '「你呢？你觉得……这个世界是真的吗？」',
+                speaker: '御厨光', text: '「你呢？你觉得……这个世界是真的吗？」',
                 choices: [
                     { text: '「不知道。但蝉鸣是真的。」', bondChange: { mikuriya: 2 }, next: 20 },
                     { text: '「真不真的，都得活下去。」', bondChange: { mikuriya: 1 }, next: 22 },
@@ -356,12 +383,11 @@ const ExplorationEngine = {
             { speaker: null, text: '她的瞳孔微微放大。\n然后——缩小。像是在确认什么。', effect: 'particles' },
             { speaker: '御厨光', text: '「…………你也是，论证者？」' },
             { speaker: null, text: '这个词。你第一次听到。\n但你知道她在说什么。', next: 27 },
-            // 27: 汇合
-            { speaker: null, text: '窗外的蝉叫了。叫声从远处涌进来，又退回去。\n空调的指示灯在闪。26度。' },
+            // 27
+            { speaker: null, text: '窗外的蝉叫了。空调的指示灯在闪。26度。' },
             { speaker: '御厨光', text: '「我叫御厨光。二年三组。」' },
             {
-                speaker: '御厨光',
-                text: '「……你明天还会来图书馆吗？」',
+                speaker: '御厨光', text: '「……你明天还会来图书馆吗？」',
                 choices: [
                     { text: '「也没什么别的事可做。」', bondChange: { mikuriya: 2 }, setFlag: 'promised_library' },
                     { text: '「会来的。」', bondChange: { mikuriya: 2 }, setFlag: 'promised_library' },
@@ -377,14 +403,7 @@ const ExplorationEngine = {
         await DialogueEngine.play(script, () => {
             this.gameState.flags.talked_mikuriya = true;
             this.gameState.flags.met_mikuriya = true;
-
-            if (!this.gameState.unlockedLocations.includes('stationPlaza')) {
-                this.gameState.unlockedLocations.push('stationPlaza');
-            }
-            if (!this.gameState.unlockedLocations.includes('bridge')) {
-                this.gameState.unlockedLocations.push('bridge');
-            }
-
+            this.unlockLocations(['stationPlaza', 'bridge']);
             Effects.notify('御厨光を記録した', 2000);
             SaveManager.save(this.gameState);
             this.enter(this.gameState.currentLocation);
