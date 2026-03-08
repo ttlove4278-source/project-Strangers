@@ -1,471 +1,52 @@
-/* ============================
-   视觉特效（完整版）
-   ============================ */
-
-/* —— CRT 扫描线 —— */
-.crt-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: var(--z-crt);
-    background: repeating-linear-gradient(
-        0deg,
-        rgba(0, 0, 0, 0.03) 0px,
-        rgba(0, 0, 0, 0.03) 1px,
-        transparent 1px,
-        transparent 3px
-    );
-}
-
-.crt-overlay::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.15) 100%);
-}
-
-/* —— 噪点层 —— */
-.noise-layer {
-    position: fixed;
-    top: -50%; left: -50%; width: 200%; height: 200%;
-    pointer-events: none;
-    z-index: var(--z-noise);
-    opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    animation: noise-shift 0.5s steps(5) infinite;
-}
-
-@keyframes noise-shift {
-    0%   { transform: translate(0, 0); }
-    20%  { transform: translate(-5%, 5%); }
-    40%  { transform: translate(3%, -3%); }
-    60%  { transform: translate(-3%, 1%); }
-    80%  { transform: translate(5%, -5%); }
-    100% { transform: translate(0, 0); }
-}
-
-/* —— 热浪 —— */
-.heat-haze {
-    position: fixed;
-    bottom: 0; left: 0; width: 100%; height: 30%;
-    pointer-events: none;
-    z-index: var(--z-overlay);
-    opacity: 0.3;
-    background: linear-gradient(to top, rgba(230,57,70,0.08) 0%, transparent 100%);
-    animation: heat-pulse 4s ease-in-out infinite;
-}
-
-@keyframes heat-pulse {
-    0%, 100% { opacity: 0.2; transform: scaleY(1); }
-    50%      { opacity: 0.4; transform: scaleY(1.02); }
-}
-
-/* —— CRT 关机 —— */
-.crt-shutdown {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--color-white);
-    z-index: var(--z-transition);
-    opacity: 0;
-    pointer-events: none;
-}
-
-.crt-shutdown.active {
-    animation: crt-off 0.8s var(--ease-out-expo) forwards;
-}
-
-@keyframes crt-off {
-    0%   { opacity: 1; clip-path: inset(0 0 0 0); }
-    40%  { opacity: 1; clip-path: inset(45% 0 45% 0); }
-    70%  { opacity: 1; clip-path: inset(49.5% 0 49.5% 0); }
-    100% { opacity: 0; clip-path: inset(50% 0 50% 0); }
-}
-
-/* —— 蝉鸣闪烁 —— */
-.cicada-blink {
-    animation: cicada 3s ease-in-out infinite;
-}
-
-@keyframes cicada {
-    0%, 100% { opacity: 0.4; }
-    30%      { opacity: 1; }
-    60%      { opacity: 0.6; }
-    80%      { opacity: 0.9; }
-}
-
-/* —— 打字光标 —— */
-.typewriter-cursor {
-    display: inline-block;
-    width: 2px; height: 1.1em;
-    background: var(--color-text);
-    margin-left: 2px;
-    vertical-align: text-bottom;
-    animation: cursor-blink 1s steps(1) infinite;
-}
-
-@keyframes cursor-blink {
-    0%, 100% { opacity: 1; }
-    50%      { opacity: 0; }
-}
-
-/* —— 逻各斯粒子 —— */
-@keyframes logos-overflow {
-    0%   { opacity: 1; transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-40px) scale(0.4) rotate(15deg); }
-}
-
-.logos-particle {
-    position: fixed;
-    color: var(--color-amber);
-    font-family: var(--font-mincho);
-    font-size: 0.7rem;
-    pointer-events: none;
-    z-index: var(--z-top);
-    animation: logos-overflow 2s var(--ease-out-expo) forwards;
-}
-
-/* —— 画面震动 —— */
-.screen-shake { animation: shake 0.3s linear; }
-
-@keyframes shake {
-    0%, 100% { transform: translate(0); }
-    20%      { transform: translate(-2px, 1px); }
-    40%      { transform: translate(2px, -1px); }
-    60%      { transform: translate(-1px, 2px); }
-    80%      { transform: translate(1px, -2px); }
-}
-
-/* —— 全屏闪光 —— */
-.screen-flash {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--color-white);
-    z-index: var(--z-transition);
-    pointer-events: none;
-    opacity: 0;
-}
-
-.screen-flash.active {
-    animation: flash 0.6s ease-out forwards;
-}
-
-@keyframes flash {
-    0%   { opacity: 0.9; }
-    100% { opacity: 0; }
-}
-
-/* —— 蝉鸣波纹 —— */
-.cicada-ripple {
-    position: fixed;
-    border: 1px solid rgba(230, 57, 70, 0.1);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: var(--z-base);
-    animation: ripple-expand 3s ease-out forwards;
-}
-
-@keyframes ripple-expand {
-    0%   { width: 0; height: 0; opacity: 0.4; }
-    100% { width: 200px; height: 200px; margin-top: -100px; margin-left: -100px; opacity: 0; }
-}
-
-/* —— 通知条 —— */
-.notification {
-    position: fixed;
-    top: var(--space-lg);
-    left: 50%;
-    transform: translateX(-50%) translateY(-20px);
-    background: var(--color-black);
-    color: var(--color-paper);
-    font-family: var(--font-gothic);
-    font-size: 0.75rem;
-    letter-spacing: 0.15em;
-    padding: var(--space-sm) var(--space-lg);
-    border: 1px solid rgba(245, 240, 232, 0.1);
-    border-left: 3px solid var(--color-red);
-    z-index: var(--z-modal);
-    opacity: 0;
-    transition: all var(--duration-normal) var(--ease-out-expo);
-    pointer-events: none;
-    white-space: nowrap;
-}
-
-.notification.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-}
-
-/* ============================
-   全屏演出系统
-   ============================ */
-
-/* —— 章节标题卡 —— */
-.chapter-card {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--color-black);
-    z-index: var(--z-transition);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.8s var(--ease-in-out);
-}
-
-.chapter-card.visible {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.chapter-card .chapter-number {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.4em;
-    color: var(--color-red);
-    margin-bottom: var(--space-lg);
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.6s var(--ease-out-expo) 0.3s;
-}
-
-.chapter-card .chapter-title {
-    font-family: var(--font-mincho);
-    font-size: clamp(1.5rem, 5vw, 3rem);
-    font-weight: 700;
-    color: var(--color-paper);
-    letter-spacing: 0.2em;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.8s var(--ease-out-expo) 0.6s;
-}
-
-.chapter-card .chapter-subtitle {
-    font-family: var(--font-gothic);
-    font-size: 0.75rem;
-    font-weight: 300;
-    color: var(--color-text-dim);
-    letter-spacing: 0.15em;
-    margin-top: var(--space-md);
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.6s var(--ease-out-expo) 1s;
-}
-
-.chapter-card .chapter-line {
-    width: 40px;
-    height: 1px;
-    background: var(--color-red);
-    margin: var(--space-lg) 0;
-    transform: scaleX(0);
-    transition: transform 0.8s var(--ease-out-expo) 0.5s;
-}
-
-.chapter-card.visible .chapter-number,
-.chapter-card.visible .chapter-title,
-.chapter-card.visible .chapter-subtitle {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.chapter-card.visible .chapter-line {
-    transform: scaleX(1);
-}
-
-/* —— 角色登场卡 —— */
-.character-card {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--color-black);
-    z-index: var(--z-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.6s var(--ease-in-out);
-}
-
-.character-card.visible {
-    opacity: 1;
-}
-
-.character-card-inner {
-    text-align: center;
-}
-
-.character-card .char-name-jp {
-    font-family: var(--font-mincho);
-    font-size: clamp(2rem, 6vw, 3.5rem);
-    font-weight: 900;
-    color: var(--color-paper);
-    letter-spacing: 0.3em;
-    opacity: 0;
-    transform: translateY(15px);
-    transition: all 0.7s var(--ease-out-expo) 0.2s;
-}
-
-.character-card .char-name-en {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.3em;
-    color: var(--color-text-dim);
-    margin-top: var(--space-sm);
-    opacity: 0;
-    transition: opacity 0.6s var(--ease-out-expo) 0.6s;
-}
-
-.character-card .char-source {
-    font-family: var(--font-handwrite);
-    font-size: 0.85rem;
-    color: var(--color-red);
-    margin-top: var(--space-lg);
-    opacity: 0;
-    transition: opacity 0.6s var(--ease-out-expo) 0.9s;
-}
-
-.character-card .char-line {
-    width: 30px;
-    height: 2px;
-    background: var(--color-amber);
-    margin: var(--space-md) auto;
-    transform: scaleX(0);
-    transition: transform 0.6s var(--ease-out-expo) 0.4s;
-}
-
-.character-card.visible .char-name-jp {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.character-card.visible .char-name-en,
-.character-card.visible .char-source {
-    opacity: 1;
-}
-
-.character-card.visible .char-line {
-    transform: scaleX(1);
-}
-
-/* —— 全屏文字演出 —— */
-.fullscreen-text {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--color-black);
-    z-index: var(--z-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.6s var(--ease-in-out);
-    padding: var(--space-xl);
-}
-
-.fullscreen-text.visible {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.fullscreen-text p {
-    font-family: var(--font-mincho);
-    font-size: clamp(1rem, 3vw, 1.5rem);
-    font-weight: 300;
-    color: var(--color-paper);
-    line-height: 2.5;
-    letter-spacing: 0.1em;
-    text-align: center;
-    max-width: 600px;
-}
-
-/* —— 日期过渡卡 —— */
-.date-card {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--color-paper);
-    z-index: var(--z-transition);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.5s var(--ease-in-out);
-}
-
-.date-card.visible {
-    opacity: 1;
-}
-
-.date-card .date-main {
-    font-family: var(--font-mono);
-    font-size: clamp(1.5rem, 4vw, 2.5rem);
-    font-weight: 300;
-    color: var(--color-text);
-    letter-spacing: 0.15em;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: all 0.6s var(--ease-out-expo) 0.2s;
-}
-
-.date-card .date-day {
-    font-family: var(--font-gothic);
-    font-size: 0.8rem;
-    color: var(--color-text-dim);
-    letter-spacing: 0.2em;
-    margin-top: var(--space-sm);
-    opacity: 0;
-    transition: opacity 0.6s var(--ease-out-expo) 0.5s;
-}
-
-.date-card .date-temp-display {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: var(--color-red);
-    margin-top: var(--space-md);
-    opacity: 0;
-    transition: opacity 0.6s var(--ease-out-expo) 0.7s;
-}
-
-.date-card .date-remaining {
-    font-family: var(--font-gothic);
-    font-size: 0.65rem;
-    color: var(--color-text-faint);
-    margin-top: var(--space-lg);
-    opacity: 0;
-    transition: opacity 0.6s var(--ease-out-expo) 1s;
-}
-
-.date-card.visible .date-main,
-.date-card.visible .date-day,
-.date-card.visible .date-temp-display,
-.date-card.visible .date-remaining {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* —— 倒计时显示 —— */
-.countdown-badge {
-    position: fixed;
-    top: var(--space-md);
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: var(--font-mono);
-    font-size: 0.55rem;
-    letter-spacing: 0.2em;
-    color: var(--color-text-faint);
-    z-index: var(--z-ui);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.5s;
-}
-
-.countdown-badge.visible {
-    opacity: 1;
-}
-
-.countdown-badge .countdown-num {
-    color: var(--color-red);
-    font-weight: 500;
-}
+.crt-overlay{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:var(--z-crt);background:repeating-linear-gradient(0deg,rgba(0,0,0,0.03) 0px,rgba(0,0,0,0.03) 1px,transparent 1px,transparent 3px)}
+.crt-overlay::after{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,0.15) 100%)}
+.noise-layer{position:fixed;top:-50%;left:-50%;width:200%;height:200%;pointer-events:none;z-index:var(--z-noise);opacity:0.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:nsh .5s steps(5) infinite}
+@keyframes nsh{0%{transform:translate(0)}20%{transform:translate(-5%,5%)}40%{transform:translate(3%,-3%)}60%{transform:translate(-3%,1%)}80%{transform:translate(5%,-5%)}100%{transform:translate(0)}}
+.heat-haze{position:fixed;bottom:0;left:0;width:100%;height:30%;pointer-events:none;z-index:var(--z-overlay);opacity:.3;background:linear-gradient(to top,rgba(230,57,70,0.08) 0%,transparent 100%);animation:hp 4s ease-in-out infinite}
+@keyframes hp{0%,100%{opacity:.2;transform:scaleY(1)}50%{opacity:.4;transform:scaleY(1.02)}}
+.crt-shutdown{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--color-white);z-index:var(--z-transition);opacity:0;pointer-events:none}
+.crt-shutdown.active{animation:co .8s var(--ease-out-expo) forwards}
+@keyframes co{0%{opacity:1;clip-path:inset(0)}40%{opacity:1;clip-path:inset(45% 0)}70%{opacity:1;clip-path:inset(49.5% 0)}100%{opacity:0;clip-path:inset(50% 0)}}
+@keyframes cicada{0%,100%{opacity:.4}30%{opacity:1}60%{opacity:.6}80%{opacity:.9}}
+@keyframes cursor-blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes logos-overflow{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-40px) scale(.4) rotate(15deg)}}
+.logos-particle{position:fixed;color:var(--color-amber);font-family:var(--font-mincho);font-size:.7rem;pointer-events:none;z-index:var(--z-top);animation:logos-overflow 2s var(--ease-out-expo) forwards}
+.screen-shake{animation:shk .3s linear}
+@keyframes shk{0%,100%{transform:translate(0)}20%{transform:translate(-2px,1px)}40%{transform:translate(2px,-1px)}60%{transform:translate(-1px,2px)}80%{transform:translate(1px,-2px)}}
+.screen-flash{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--color-white);z-index:var(--z-transition);pointer-events:none;opacity:0}
+.screen-flash.active{animation:fl .6s ease-out forwards}
+@keyframes fl{0%{opacity:.9}100%{opacity:0}}
+.cicada-ripple{position:fixed;border:1px solid rgba(230,57,70,0.1);border-radius:50%;pointer-events:none;z-index:var(--z-base);animation:re 3s ease-out forwards}
+@keyframes re{0%{width:0;height:0;opacity:.4}100%{width:200px;height:200px;margin-top:-100px;margin-left:-100px;opacity:0}}
+.notification{position:fixed;top:var(--space-lg);left:50%;transform:translateX(-50%) translateY(-20px);background:var(--color-black);color:var(--color-paper);font-family:var(--font-gothic);font-size:.75rem;letter-spacing:.15em;padding:var(--space-sm) var(--space-lg);border:1px solid rgba(245,240,232,0.1);border-left:3px solid var(--color-red);z-index:var(--z-modal);opacity:0;transition:all var(--duration-normal) var(--ease-out-expo);pointer-events:none;white-space:nowrap}
+.notification.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.chapter-card{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--color-black);z-index:var(--z-transition);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .8s var(--ease-in-out)}
+.chapter-card.visible{opacity:1;pointer-events:auto}
+.chapter-card .chapter-number{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.4em;color:var(--color-red);margin-bottom:var(--space-lg);opacity:0;transform:translateY(10px);transition:all .6s var(--ease-out-expo) .3s}
+.chapter-card .chapter-title{font-family:var(--font-mincho);font-size:clamp(1.5rem,5vw,3rem);font-weight:700;color:var(--color-paper);letter-spacing:.2em;opacity:0;transform:translateY(10px);transition:all .8s var(--ease-out-expo) .6s}
+.chapter-card .chapter-subtitle{font-family:var(--font-gothic);font-size:.75rem;font-weight:300;color:var(--color-text-dim);letter-spacing:.15em;margin-top:var(--space-md);opacity:0;transition:opacity .6s var(--ease-out-expo) 1s}
+.chapter-card .chapter-line{width:40px;height:1px;background:var(--color-red);margin:var(--space-lg) 0;transform:scaleX(0);transition:transform .8s var(--ease-out-expo) .5s}
+.chapter-card.visible .chapter-number,.chapter-card.visible .chapter-title,.chapter-card.visible .chapter-subtitle{opacity:1;transform:translateY(0)}
+.chapter-card.visible .chapter-line{transform:scaleX(1)}
+.character-card{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--color-black);z-index:var(--z-transition);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .6s var(--ease-in-out)}
+.character-card.visible{opacity:1}
+.character-card .char-name-jp{font-family:var(--font-mincho);font-size:clamp(2rem,6vw,3.5rem);font-weight:900;color:var(--color-paper);letter-spacing:.3em;opacity:0;transform:translateY(15px);transition:all .7s var(--ease-out-expo) .2s}
+.character-card .char-name-en{font-family:var(--font-mono);font-size:.65rem;letter-spacing:.3em;color:var(--color-text-dim);margin-top:var(--space-sm);opacity:0;transition:opacity .6s var(--ease-out-expo) .6s}
+.character-card .char-source{font-family:var(--font-handwrite);font-size:.85rem;color:var(--color-red);margin-top:var(--space-lg);opacity:0;transition:opacity .6s var(--ease-out-expo) .9s}
+.character-card .char-line{width:30px;height:2px;background:var(--color-amber);margin:var(--space-md) auto;transform:scaleX(0);transition:transform .6s var(--ease-out-expo) .4s}
+.character-card.visible .char-name-jp{opacity:1;transform:translateY(0)}
+.character-card.visible .char-name-en,.character-card.visible .char-source{opacity:1}
+.character-card.visible .char-line{transform:scaleX(1)}
+.fullscreen-text{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--color-black);z-index:var(--z-transition);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .6s var(--ease-in-out);padding:var(--space-xl)}
+.fullscreen-text.visible{opacity:1;pointer-events:auto}
+.fullscreen-text p{font-family:var(--font-mincho);font-size:clamp(1rem,3vw,1.5rem);font-weight:300;color:var(--color-paper);line-height:2.5;letter-spacing:.1em;text-align:center;max-width:600px}
+.date-card{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--color-paper);z-index:var(--z-transition);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .5s var(--ease-in-out)}
+.date-card.visible{opacity:1}
+.date-card .date-main{font-family:var(--font-mono);font-size:clamp(1.5rem,4vw,2.5rem);font-weight:300;color:var(--color-text);letter-spacing:.15em;opacity:0;transform:translateY(8px);transition:all .6s var(--ease-out-expo) .2s}
+.date-card .date-day{font-family:var(--font-gothic);font-size:.8rem;color:var(--color-text-dim);letter-spacing:.2em;margin-top:var(--space-sm);opacity:0;transition:opacity .6s var(--ease-out-expo) .5s}
+.date-card .date-temp-display{font-family:var(--font-mono);font-size:.7rem;color:var(--color-red);margin-top:var(--space-md);opacity:0;transition:opacity .6s var(--ease-out-expo) .7s}
+.date-card .date-remaining{font-family:var(--font-gothic);font-size:.65rem;color:var(--color-text-faint);margin-top:var(--space-lg);opacity:0;transition:opacity .6s var(--ease-out-expo) 1s}
+.date-card.visible .date-main,.date-card.visible .date-day,.date-card.visible .date-temp-display,.date-card.visible .date-remaining{opacity:1;transform:translateY(0)}
+.countdown-badge{position:fixed;top:var(--space-md);left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:.55rem;letter-spacing:.2em;color:var(--color-text-faint);z-index:var(--z-ui);pointer-events:none;opacity:0;transition:opacity .5s}
+.countdown-badge.visible{opacity:1}
+.countdown-badge .countdown-num{color:var(--color-red);font-weight:500}
