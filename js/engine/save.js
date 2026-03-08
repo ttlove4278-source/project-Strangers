@@ -14,6 +14,8 @@ const SaveManager = {
             currentDay: '1999-07-13',
             currentTime: '15:42',
             currentTemp: 37.5,
+            timeOfDay: 'day',
+            dayIndex: 0,
 
             player: {
                 name: '夏目珀',
@@ -56,7 +58,6 @@ const SaveManager = {
             if (!raw) return null;
             return JSON.parse(raw);
         } catch (e) {
-            console.warn('[SaveManager] 读取失败:', e);
             return null;
         }
     },
@@ -66,7 +67,7 @@ const SaveManager = {
             data.lastSaved = Date.now();
             localStorage.setItem(this.SAVE_KEY, JSON.stringify(data));
         } catch (e) {
-            console.warn('[SaveManager] 保存失败:', e);
+            console.warn('[Save] 失败', e);
         }
     },
 
@@ -88,10 +89,9 @@ const SaveManager = {
             deathMemories: [...data.deathMemories, deathMemory],
             settings: { ...data.settings },
             totalPlayTime: data.totalPlayTime,
-            completedEvents: [...data.completedEvents],
-            visitedLocations: [...data.visitedLocations],
+            completedEvents: [...(data.completedEvents || [])],
+            visitedLocations: [...(data.visitedLocations || [])],
         };
-
         const fresh = this.defaultData();
         return { ...fresh, ...preserved };
     },
