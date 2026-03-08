@@ -8,8 +8,6 @@ const Game = {
 
     async init() {
         console.log('=== 世紀末異邦人 ===');
-        console.log('1999.7.13 — 蝉在叫。');
-
         SceneManager.init();
         this.state = SaveManager.load() || SaveManager.defaultData();
         DialogueEngine.init(this.state);
@@ -25,21 +23,19 @@ const Game = {
 
     updateTitleScreen() {
         Effects.setDeathCounter(this.state.deathCount);
-        const continueBtn = document.getElementById('btn-continue');
-        if (continueBtn) {
-            continueBtn.disabled = !this.state.flags.awakening_complete;
-        }
+        const btn = document.getElementById('btn-continue');
+        if (btn) btn.disabled = !this.state.flags.awakening_complete;
     },
 
     bindMenuEvents() {
         document.querySelectorAll('.menu-item').forEach(btn => {
             btn.addEventListener('click', async () => {
-                const action = btn.dataset.action;
-                switch (action) {
+                AudioManager.playClick();
+                switch (btn.dataset.action) {
                     case 'new-game': await this.startNewGame(); break;
                     case 'continue': await this.continueGame(); break;
                     case 'death-memory': this.showDeathMemories(); break;
-                    case 'settings': Effects.notify('设定功能 — 开发中', 1500); break;
+                    case 'settings': Effects.notify('设定 — 开发中', 1500); break;
                 }
             });
         });
@@ -50,6 +46,8 @@ const Game = {
             AudioManager.init();
             AudioManager.playCicada();
             AudioManager.playCRTHum();
+            AudioManager.playWind();
+            AudioManager.playTitleBGM();
             document.removeEventListener('click', handler);
             document.removeEventListener('keydown', handler);
         };
@@ -61,6 +59,13 @@ const Game = {
         this.state = SaveManager.createNew();
         DialogueEngine.gameState = this.state;
         ExplorationEngine.gameState = this.state;
+
+        // 章节标题卡
+        await Effects.showChapterCard(
+            'CHAPTER 01',
+            '世紀末の異邦人',
+            '1999.7.13 — 蝉在叫。石头在山脚。'
+        );
 
         await DialogueEngine.play(Chapter1.awakening, () => {
             this.onAwakeningComplete();
@@ -85,14 +90,16 @@ const Game = {
         this.state.unlockedLocations = ['teibow', 'vendingMachine', 'school'];
         SaveManager.save(this.state);
 
-        await Effects.wait(300);
-        Effects.notify('序章「觉醒」完了', 2000);
-        await Effects.wait(800);
+        await Effects.showFullscreenText(
+            '蝉在叫。太阳不会落。<br>你开始推石头。',
+            2500
+        );
+
         await ExplorationEngine.enter('teibow');
     },
 
     showDeathMemories() {
-        if (!this.state.deathMemories || this.state.deathMemories.length === 0) {
+        if (!this.state.deathMemories || !this.state.deathMemories.length) {
             Effects.notify('死亡记忆为空', 2000);
             return;
         }
@@ -103,8 +110,7 @@ const Game = {
         this.state = SaveManager.deathReset(this.state, {
             scene: this.state.currentScene,
             location: this.state.currentLocation,
-            memory: memory,
-            timestamp: Date.now()
+            memory, timestamp: Date.now()
         });
         DialogueEngine.gameState = this.state;
         ExplorationEngine.gameState = this.state;
@@ -114,4 +120,4 @@ const Game = {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => { Game.init(); });
+document.addEventListener('DOMContentLoaded', () => Game.init());
