@@ -1,11 +1,16 @@
-/* ============================
-   探索界面
-   ============================ */
-
 #exploration-screen {
     background-color: var(--color-paper);
     display: flex;
     flex-direction: column;
+    transition: background-color 0.8s var(--ease-in-out);
+}
+
+#exploration-screen.evening {
+    background-color: var(--color-evening);
+}
+
+#exploration-screen.night {
+    background-color: var(--color-night);
 }
 
 .exploration-content {
@@ -20,7 +25,7 @@
     padding: 0 var(--space-lg);
 }
 
-/* —— 状态栏 —— */
+/* 状态栏 */
 .status-bar {
     display: flex;
     justify-content: space-between;
@@ -33,21 +38,21 @@
     letter-spacing: 0.1em;
 }
 
-.status-date {
-    display: flex;
-    gap: var(--space-md);
+.night .status-bar {
+    color: var(--color-night-text);
+    border-color: rgba(200, 200, 216, 0.1);
 }
 
-.status-temp {
-    color: var(--color-red);
-    font-weight: 500;
-}
+.status-date { display: flex; gap: var(--space-md); }
+.status-temp { color: var(--color-red); font-weight: 500; }
 
-/* —— 地点标题 —— */
+/* 地点标题 */
 .location-title {
     padding: var(--space-lg) 0 var(--space-md);
     border-bottom: 1px solid rgba(43, 43, 43, 0.06);
 }
+
+.night .location-title { border-color: rgba(200, 200, 216, 0.06); }
 
 .location-title h2 {
     font-family: var(--font-mincho);
@@ -58,6 +63,8 @@
     margin-bottom: var(--space-xs);
 }
 
+.night .location-title h2 { color: var(--color-paper); }
+
 .location-desc {
     font-family: var(--font-gothic);
     font-size: 0.75rem;
@@ -66,7 +73,9 @@
     letter-spacing: 0.1em;
 }
 
-/* —— 叙述区 —— */
+.night .location-desc { color: var(--color-night-text); opacity: 0.6; }
+
+/* 叙述区 */
 .narrative-area {
     flex: 1;
     overflow-y: auto;
@@ -83,7 +92,8 @@
     letter-spacing: 0.05em;
 }
 
-/* 叙述段落 */
+.night .narrative-text { color: var(--color-night-text); }
+
 .narrative-paragraph {
     margin-bottom: var(--space-md);
     opacity: 0;
@@ -91,20 +101,42 @@
     animation: fadeInUp 0.5s var(--ease-out-expo) forwards;
 }
 
-/* —— 动作选项区 —— */
+/* 故事提示 */
+.story-hint {
+    font-family: var(--font-handwrite);
+    font-size: 0.75rem;
+    color: var(--color-red);
+    opacity: 0.6;
+    padding: var(--space-sm) 0;
+    border-top: 1px solid rgba(230, 57, 70, 0.1);
+    margin-top: var(--space-sm);
+    text-align: center;
+    animation: fadeInUp 0.5s var(--ease-out-expo) 0.3s forwards;
+    opacity: 0;
+}
+
+/* 行动区 */
 .choices-area {
-    padding: var(--space-md) 0 var(--space-md);
+    padding: var(--space-md) 0 var(--space-sm);
     display: flex;
     flex-direction: column;
     gap: 2px;
     border-top: 1px solid rgba(43, 43, 43, 0.08);
 }
 
-.choices-area:empty {
-    display: none;
+.night .choices-area { border-color: rgba(200, 200, 216, 0.08); }
+.choices-area:empty { display: none; }
+
+.choices-label {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    color: var(--color-text-faint);
+    padding: var(--space-xs) 0;
+    text-transform: uppercase;
 }
 
-/* —— 地点导航按钮 —— */
+/* 导航区 */
 .nav-area {
     padding: var(--space-sm) 0 var(--space-md);
     display: flex;
@@ -113,9 +145,8 @@
     border-top: 1px solid rgba(43, 43, 43, 0.08);
 }
 
-.nav-area:empty {
-    display: none;
-}
+.night .nav-area { border-color: rgba(200, 200, 216, 0.08); }
+.nav-area:empty { display: none; }
 
 .nav-btn {
     display: inline-flex;
@@ -133,43 +164,51 @@
     background: transparent;
 }
 
+.night .nav-btn {
+    color: var(--color-night-text);
+    border-color: rgba(200, 200, 216, 0.12);
+}
+
 .nav-btn:hover {
     color: var(--color-text);
     border-color: var(--color-red);
     background: var(--color-red-glow);
 }
 
-.nav-btn .nav-icon {
-    font-size: 0.6rem;
-    opacity: 0.5;
-}
+.nav-btn .nav-icon { font-size: 0.6rem; opacity: 0.5; }
 
 .nav-btn.has-event::after {
     content: '!';
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 14px;
-    height: 14px;
+    width: 14px; height: 14px;
     font-size: 0.55rem;
     font-weight: 700;
     color: var(--color-white);
     background: var(--color-red);
     border-radius: 50%;
     margin-left: var(--space-xs);
+    animation: pulse-badge 2s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
 }
 
 .nav-btn.new::after {
     content: 'NEW';
-    font-size: 0.45rem;
+    font-size: 0.4rem;
     font-family: var(--font-mono);
     letter-spacing: 0.05em;
     width: auto;
-    padding: 0 5px;
+    padding: 1px 5px;
     border-radius: 2px;
+    animation: none;
 }
 
-/* —— 行动按钮（通用） —— */
+/* 行动按钮 */
 .action-btn {
     display: flex;
     align-items: center;
@@ -189,6 +228,8 @@
     position: relative;
 }
 
+.night .action-btn { color: var(--color-night-text); }
+
 .action-btn::before {
     content: '▸';
     color: var(--color-red);
@@ -205,32 +246,39 @@
     padding-left: calc(var(--space-md) + 4px);
 }
 
-.action-btn:hover::before {
-    opacity: 1;
-    transform: translateX(0);
-}
+.action-btn:hover::before { opacity: 1; transform: translateX(0); }
+.action-btn:active { transform: scale(0.99); }
 
-.action-btn:active {
-    transform: scale(0.99);
-}
-
-/* 强调行动 */
+/* 重要行动 — 脉冲边框 */
 .action-btn.important {
-    color: var(--color-red);
+    color: var(--color-text);
     font-weight: 500;
+    border-left: 2px solid var(--color-red);
+    padding-left: calc(var(--space-md) + 2px);
+    animation: important-pulse 3s ease-in-out infinite;
 }
 
-.action-btn.important::before {
-    opacity: 0.5;
+.action-btn.important::before { opacity: 0.5; }
+
+@keyframes important-pulse {
+    0%, 100% { border-left-color: rgba(230, 57, 70, 0.3); }
+    50% { border-left-color: rgba(230, 57, 70, 0.8); }
 }
 
-/* 锁定行动 */
-.action-btn.locked {
-    opacity: 0.3;
-    pointer-events: none;
+/* NEW 标记 */
+.action-btn .action-new {
+    font-family: var(--font-mono);
+    font-size: 0.45rem;
+    letter-spacing: 0.1em;
+    color: var(--color-white);
+    background: var(--color-red);
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-left: var(--space-sm);
+    flex-shrink: 0;
 }
 
-/* —— 底部信息栏 —— */
+/* 底部栏 */
 .bottom-bar {
     display: flex;
     justify-content: space-between;
@@ -240,11 +288,9 @@
     flex-shrink: 0;
 }
 
-.logos-bar {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-}
+.night .bottom-bar { border-color: rgba(200, 200, 216, 0.1); }
+
+.logos-bar { display: flex; align-items: center; gap: var(--space-sm); }
 
 .logos-label {
     font-family: var(--font-mono);
@@ -254,8 +300,7 @@
 }
 
 .logos-gauge {
-    width: 120px;
-    height: 4px;
+    width: 120px; height: 4px;
     background: rgba(43, 43, 43, 0.1);
     border-radius: 2px;
     overflow: hidden;
@@ -282,17 +327,33 @@
     letter-spacing: 0.1em;
 }
 
-.death-count-small span:last-child {
-    color: var(--color-red);
-    font-weight: 500;
-}
+.death-count-small span:last-child { color: var(--color-red); font-weight: 500; }
 
-/* —— 中间提示文字 —— */
 .location-event-hint {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     color: var(--color-text-faint);
-    letter-spacing: 0.15em;
-    text-align: center;
-    padding: var(--space-sm) 0;
+    letter-spacing: 0.2em;
+    padding: var(--space-xs) 0;
+    text-transform: uppercase;
+    width: 100%;
 }
+
+/* 氛围装饰文字 */
+.ambient-text {
+    position: absolute;
+    right: var(--space-lg);
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--font-mincho);
+    font-size: 3rem;
+    font-weight: 900;
+    color: rgba(43, 43, 43, 0.03);
+    writing-mode: vertical-rl;
+    letter-spacing: 0.3em;
+    pointer-events: none;
+    z-index: var(--z-base);
+    user-select: none;
+}
+
+.night .ambient-text { color: rgba(200, 200, 216, 0.04); }
