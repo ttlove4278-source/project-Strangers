@@ -1,6 +1,5 @@
 /**
  * 世纪末异邦人
- * STRANGERS AT THE END OF THE CENTURY
  * 1999 · 夏 · 推石头的人们
  */
 
@@ -12,12 +11,9 @@ const Game = {
         console.log('1999.7.13 — 蝉在叫。');
 
         SceneManager.init();
-
         this.state = SaveManager.load() || SaveManager.defaultData();
-
         DialogueEngine.init(this.state);
         ExplorationEngine.init(this.state);
-
         this.updateTitleScreen();
 
         document.getElementById('title-screen').classList.add('active');
@@ -29,11 +25,9 @@ const Game = {
 
     updateTitleScreen() {
         Effects.setDeathCounter(this.state.deathCount);
-
         const continueBtn = document.getElementById('btn-continue');
         if (continueBtn) {
-            const hasProgress = this.state.flags.awakening_complete;
-            continueBtn.disabled = !hasProgress;
+            continueBtn.disabled = !this.state.flags.awakening_complete;
         }
     },
 
@@ -42,18 +36,10 @@ const Game = {
             btn.addEventListener('click', async () => {
                 const action = btn.dataset.action;
                 switch (action) {
-                    case 'new-game':
-                        await this.startNewGame();
-                        break;
-                    case 'continue':
-                        await this.continueGame();
-                        break;
-                    case 'death-memory':
-                        this.showDeathMemories();
-                        break;
-                    case 'settings':
-                        Effects.notify('设定功能 — 开发中', 1500);
-                        break;
+                    case 'new-game': await this.startNewGame(); break;
+                    case 'continue': await this.continueGame(); break;
+                    case 'death-memory': this.showDeathMemories(); break;
+                    case 'settings': Effects.notify('设定功能 — 开发中', 1500); break;
                 }
             });
         });
@@ -86,33 +72,28 @@ const Game = {
             await this.startNewGame();
             return;
         }
-
-        ExplorationEngine.gameState = this.state;
         DialogueEngine.gameState = this.state;
+        ExplorationEngine.gameState = this.state;
         await ExplorationEngine.enter(this.state.currentLocation);
     },
 
     async onAwakeningComplete() {
         this.state.flags.awakening_complete = true;
         this.state.currentScene = 'exploration';
-
-        // 解锁初始地点
+        this.state.timeOfDay = 'day';
+        this.state.dayIndex = 0;
         this.state.unlockedLocations = ['teibow', 'vendingMachine', 'school'];
-
         SaveManager.save(this.state);
 
-        // 通知
         await Effects.wait(300);
         Effects.notify('序章「觉醒」完了', 2000);
         await Effects.wait(800);
-
-        // 进入探索
         await ExplorationEngine.enter('teibow');
     },
 
     showDeathMemories() {
         if (!this.state.deathMemories || this.state.deathMemories.length === 0) {
-            Effects.notify('死亡记忆为空。还没有死过。', 2000);
+            Effects.notify('死亡记忆为空', 2000);
             return;
         }
         Effects.notify(`死亡记忆: ${this.state.deathMemories.length} 件`, 2000);
@@ -125,17 +106,12 @@ const Game = {
             memory: memory,
             timestamp: Date.now()
         });
-
         DialogueEngine.gameState = this.state;
         ExplorationEngine.gameState = this.state;
-
         await Transitions.deathReset(this.state.deathCount);
-
         this.updateTitleScreen();
         await SceneManager.switchTo('title-screen', 'fade');
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    Game.init();
-});
+document.addEventListener('DOMContentLoaded', () => { Game.init(); });
