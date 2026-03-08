@@ -5,48 +5,40 @@
 const SceneManager = {
     currentScreen: null,
     screens: {},
+    transitioning: false,
 
     init() {
-        // 注册所有屏幕
         document.querySelectorAll('.screen').forEach(el => {
             this.screens[el.id] = el;
         });
-        console.log('[SceneManager] 已注册屏幕:', Object.keys(this.screens));
     },
 
-    // 切换屏幕
     async switchTo(screenId, transition = 'crt') {
+        if (this.transitioning) return;
         const target = this.screens[screenId];
-        if (!target) {
-            console.warn('[SceneManager] 未找到屏幕:', screenId);
-            return;
-        }
+        if (!target || this.currentScreen === target) return;
 
-        if (this.currentScreen === target) return;
+        this.transitioning = true;
 
-        // 执行转场
-        if (transition === 'crt') {
+        if (transition === 'crt' && this.currentScreen) {
             await Transitions.crtOff();
-        } else if (transition === 'fade') {
-            await Transitions.fadeOut();
+        } else if (transition === 'fade' && this.currentScreen) {
+            await Transitions.fadeOut(400);
         }
 
-        // 切换
         Object.values(this.screens).forEach(s => s.classList.remove('active'));
         target.classList.add('active');
         this.currentScreen = target;
 
-        // 转场结束
+        await Effects.wait(100);
+
         if (transition === 'crt') {
             await Transitions.crtOn();
-        } else if (transition === 'fade') {
-            await Transitions.fadeIn();
         }
 
-        console.log('[SceneManager] 切换至:', screenId);
+        this.transitioning = false;
     },
 
-    // 获取当前屏幕ID
     getCurrentId() {
         return this.currentScreen ? this.currentScreen.id : null;
     }
