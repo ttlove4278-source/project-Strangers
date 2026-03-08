@@ -1,0 +1,58 @@
+/* ============================
+   世纪末异邦人 — 设计变量
+   1999 · 夏 · 37.5℃
+   ============================ */
+
+:root {
+    /* —— 色彩体系 —— */
+    --color-paper:      #F5F0E8;     /* 泛黄纸张 */
+    --color-paper-dark:  #E8E0D0;    /* 深纸张 */
+    --color-red:        #E63946;     /* 燥热红 */
+    --color-red-dim:    #C62828;     /* 暗红 */
+    --color-navy:       #1D3557;     /* 深夜藏青 */
+    --color-navy-light: #264573;     /* 浅藏青 */
+    --color-text:       #2B2B2B;     /* 墨色 */
+    --color-text-dim:   #6B6B6B;     /* 淡墨 */
+    --color-amber:      #FFB703;     /* 逻各斯·琥珀金 */
+    --color-amber-dim:  #CC9200;     /* 暗琥珀 */
+    --color-black:      #0A0A0A;     /* 纯黑 */
+    --color-white:      #FAFAFA;     /* 纯白 */
+    --color-crt-green:  #33FF66;     /* CRT绿 */
+    --color-crystal:    #A8D8EA;     /* 理论结晶色 */
+
+    /* —— 字体 —— */
+    --font-mincho:   'Noto Serif JP', 'Yu Mincho', serif;
+    --font-gothic:   'Noto Sans JP', 'Hiragino Sans', sans-serif;
+    --font-handwrite: 'Zen Kurenaido', cursive;
+    --font-mono:     'Source Code Pro', 'Courier New', monospace;
+
+    /* —— 间距 —— */
+    --space-xs:  4px;
+    --space-sm:  8px;
+    --space-md:  16px;
+    --space-lg:  32px;
+    --space-xl:  64px;
+    --space-xxl: 128px;
+
+    /* —— 动画时长 —— */
+    --duration-instant: 0.1s;
+    --duration-fast:    0.25s;
+    --duration-normal:  0.5s;
+    --duration-slow:    1s;
+    --duration-crawl:   2s;
+    --duration-glacial: 4s;
+
+    /* —— 缓动函数 —— */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* —— 层级 —— */
+    --z-base:       1;
+    --z-content:    10;
+    --z-overlay:    100;
+    --z-noise:      200;
+    --z-crt:        300;
+    --z-transition: 900;
+    --z-top:        999;
+}
