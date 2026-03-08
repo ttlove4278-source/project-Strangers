@@ -5,7 +5,7 @@
 #dialogue-screen {
     background-color: var(--color-black);
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
 }
 
@@ -14,10 +14,25 @@
     z-index: var(--z-content);
     width: 100%;
     height: 100%;
+    max-width: 900px;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     padding: var(--space-xl) var(--space-lg) var(--space-lg);
+}
+
+/* —— 上方场景描述区（氛围文字） —— */
+.dialogue-atmosphere {
+    position: absolute;
+    top: var(--space-xl);
+    left: var(--space-lg);
+    right: var(--space-lg);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: rgba(245, 240, 232, 0.2);
+    letter-spacing: 0.2em;
+    line-height: 2;
 }
 
 /* —— 说话者名字 —— */
@@ -32,6 +47,7 @@
     opacity: 0;
     transform: translateX(-10px);
     transition: all var(--duration-normal) var(--ease-out-expo);
+    min-height: 1.4em;
 }
 
 .dialogue-speaker.visible {
@@ -39,15 +55,26 @@
     transform: translateX(0);
 }
 
+/* 无说话者时（旁白） */
+.dialogue-speaker.narrator {
+    color: var(--color-text-faint);
+    font-family: var(--font-gothic);
+    font-weight: 300;
+    font-size: 0.7rem;
+}
+
 /* —— 对话文本区 —— */
 .dialogue-text-area {
     background: rgba(10, 10, 10, 0.85);
-    border: 1px solid rgba(245, 240, 232, 0.08);
-    border-radius: 2px;
-    padding: var(--space-lg) var(--space-lg);
-    min-height: 140px;
+    border: 1px solid rgba(245, 240, 232, 0.06);
+    border-left: 3px solid rgba(230, 57, 70, 0.3);
+    border-radius: 0 2px 2px 0;
+    padding: var(--space-lg);
+    min-height: 130px;
+    max-height: 220px;
     margin-bottom: var(--space-md);
     position: relative;
+    overflow-y: auto;
 }
 
 .dialogue-text {
@@ -57,14 +84,16 @@
     color: var(--color-paper);
     line-height: 2;
     letter-spacing: 0.05em;
+    white-space: pre-wrap;
 }
 
 /* —— 选项 —— */
 .dialogue-choices {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
-    padding-left: var(--space-md);
+    gap: 2px;
+    padding-left: var(--space-sm);
+    min-height: 0;
 }
 
 .dialogue-choice {
@@ -76,11 +105,12 @@
     font-size: 0.85rem;
     font-weight: 400;
     color: var(--color-paper);
-    opacity: 0.7;
+    opacity: 0.6;
     letter-spacing: 0.1em;
     transition: all var(--duration-fast) var(--ease-out-expo);
     cursor: pointer;
     position: relative;
+    border-radius: 2px;
 }
 
 .dialogue-choice::before {
@@ -90,11 +120,14 @@
     transform: translateX(-6px);
     transition: all var(--duration-fast) var(--ease-out-expo);
     flex-shrink: 0;
+    margin-top: 0.15em;
 }
 
 .dialogue-choice:hover {
     opacity: 1;
     color: var(--color-red);
+    background: rgba(230, 57, 70, 0.05);
+    padding-left: calc(var(--space-md) + 4px);
 }
 
 .dialogue-choice:hover::before {
@@ -102,9 +135,13 @@
     transform: translateX(0);
 }
 
-/* 需要死亡次数解锁的选项 */
+.dialogue-choice:active {
+    transform: scale(0.99);
+}
+
+/* 锁定选项 */
 .dialogue-choice.locked {
-    opacity: 0.25;
+    opacity: 0.2;
     pointer-events: none;
     font-style: italic;
 }
@@ -112,10 +149,10 @@
 .dialogue-choice.locked::after {
     content: attr(data-lock-hint);
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     color: var(--color-red);
     margin-left: var(--space-sm);
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 /* —— 继续提示 —— */
@@ -126,16 +163,18 @@
     color: var(--color-paper);
     opacity: 0;
     font-size: 0.8rem;
-    animation: continue-pulse 1.5s ease-in-out infinite;
     cursor: pointer;
     z-index: var(--z-content);
+    pointer-events: none;
 }
 
 .dialogue-continue.visible {
-    opacity: 0.5;
+    opacity: 0.4;
+    pointer-events: auto;
+    animation: continue-pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes continue-pulse {
     0%, 100% { transform: translateX(0); opacity: 0.3; }
-    50%      { transform: translateX(4px); opacity: 0.7; }
+    50%      { transform: translateX(4px); opacity: 0.6; }
 }
