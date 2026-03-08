@@ -1,276 +1,32 @@
-/* ============================
-   标题画面
-   ============================ */
-
-#title-screen {
-    background-color: var(--color-paper);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.title-content {
-    position: relative;
-    z-index: var(--z-content);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-    max-width: 800px;
-    padding: var(--space-xl) var(--space-lg);
-}
-
-/* —— 日期标记 —— */
-.title-date {
-    position: absolute;
-    top: var(--space-lg);
-    right: var(--space-lg);
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--color-text-dim);
-    letter-spacing: 0.1em;
-    opacity: 0;
-    animation: fade-in 1.5s var(--ease-out-expo) 0.5s forwards;
-}
-
-.date-separator {
-    color: var(--color-red);
-}
-
-.date-temp {
-    color: var(--color-red);
-    font-weight: 500;
-}
-
-/* —— 主标题 —— */
-.title-main {
-    text-align: center;
-    margin-bottom: var(--space-xl);
-}
-
-.title-jp {
-    display: flex;
-    justify-content: center;
-    gap: 0.15em;
-    margin-bottom: var(--space-md);
-}
-
-.title-jp .char {
-    font-family: var(--font-mincho);
-    font-size: clamp(2.5rem, 7vw, 4.5rem);
-    font-weight: 900;
-    color: var(--color-text);
-    opacity: 0;
-    transform: translateY(20px);
-    animation: char-rise 0.8s var(--ease-out-expo) calc(var(--i) * 0.12s + 0.8s) forwards;
-    position: relative;
-    display: inline-block;
-}
-
-.title-jp .char::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: var(--color-red);
-    transform: scaleX(0);
-    transform-origin: left;
-    animation: underline-grow 0.6s var(--ease-out-expo) calc(var(--i) * 0.12s + 1.4s) forwards;
-}
-
-.title-en {
-    font-family: var(--font-mono);
-    font-size: clamp(0.5rem, 1.5vw, 0.75rem);
-    letter-spacing: 0.3em;
-    color: var(--color-text-dim);
-    text-transform: uppercase;
-    opacity: 0;
-    animation: fade-in 1s var(--ease-out-expo) 2s forwards;
-}
-
-.title-sub {
-    font-family: var(--font-handwrite);
-    font-size: clamp(0.8rem, 2vw, 1rem);
-    color: var(--color-red);
-    margin-top: var(--space-md);
-    opacity: 0;
-    animation: fade-in 1.5s var(--ease-out-expo) 2.5s forwards;
-}
-
-/* —— 菜单 —— */
-.title-menu {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-xs);
-    opacity: 0;
-    animation: fade-in 1s var(--ease-out-expo) 3s forwards;
-}
-
-.menu-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-md);
-    font-family: var(--font-gothic);
-    font-size: 0.95rem;
-    font-weight: 400;
-    color: var(--color-text);
-    letter-spacing: 0.15em;
-    position: relative;
-    transition: all var(--duration-fast) var(--ease-out-expo);
-}
-
-.menu-marker {
-    font-size: 0.7rem;
-    color: var(--color-red);
-    opacity: 0;
-    transform: translateX(-8px);
-    transition: all var(--duration-fast) var(--ease-out-expo);
-}
-
-.menu-item:hover .menu-marker {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.menu-item:hover .menu-text {
-    transform: translateX(4px);
-    color: var(--color-red);
-}
-
-.menu-text {
-    transition: all var(--duration-fast) var(--ease-out-expo);
-}
-
-.menu-item::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    left: var(--space-md);
-    right: var(--space-md);
-    height: 1px;
-    background: var(--color-red);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform var(--duration-fast) var(--ease-out-expo);
-}
-
-.menu-item:hover::after {
-    transform: scaleX(1);
-}
-
-.menu-item:active {
-    transform: scale(0.98);
-}
-
-.menu-item:disabled {
-    opacity: 0.3;
-    pointer-events: none;
-}
-
-/* —— 死亡计数器 —— */
-.death-counter {
-    position: absolute;
-    bottom: var(--space-xl);
-    right: var(--space-lg);
-    text-align: right;
-    opacity: 0;
-    animation: fade-in 1.5s var(--ease-out-expo) 3.5s forwards;
-}
-
-.counter-label {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.3em;
-    color: var(--color-text-dim);
-    margin-bottom: var(--space-xs);
-}
-
-.counter-number {
-    display: flex;
-    gap: 2px;
-    justify-content: flex-end;
-}
-
-.digit {
-    font-family: var(--font-mono);
-    font-size: 2rem;
-    font-weight: 300;
-    color: var(--color-red);
-    line-height: 1;
-    min-width: 1.2em;
-    text-align: center;
-}
-
-/* —— 底部引用 —— */
-.title-quote {
-    position: absolute;
-    bottom: var(--space-lg);
-    left: var(--space-lg);
-    max-width: 400px;
-    opacity: 0;
-    animation: fade-in 2s var(--ease-out-expo) 4s forwards;
-}
-
-.title-quote p {
-    font-family: var(--font-mincho);
-    font-size: 0.8rem;
-    font-weight: 300;
-    color: var(--color-text-dim);
-    line-height: 1.8;
-    font-style: italic;
-}
-
-.title-quote cite {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    color: var(--color-text-dim);
-    opacity: 0.6;
-    margin-top: var(--space-xs);
-    letter-spacing: 0.05em;
-}
-
-/* —— 蝉鸣提示 —— */
-.cicada-hint {
-    position: absolute;
-    bottom: var(--space-xl);
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: var(--z-content);
-    opacity: 0;
-    animation: fade-in 1s var(--ease-out-expo) 5s forwards;
-}
-
-.cicada-hint span {
-    font-family: var(--font-gothic);
-    font-size: 0.7rem;
-    color: var(--color-text-dim);
-    letter-spacing: 0.2em;
-    animation: cicada 3s ease-in-out infinite;
-}
-
-/* —— 动画关键帧 —— */
-@keyframes char-rise {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes underline-grow {
-    from { transform: scaleX(0); }
-    to   { transform: scaleX(1); }
-}
-
-@keyframes fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
+#title-screen{background:var(--color-paper);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.title-content{position:relative;z-index:var(--z-content);display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;width:100%;max-width:800px;padding:var(--space-xl) var(--space-lg)}
+.title-date{position:absolute;top:var(--space-lg);right:var(--space-lg);display:flex;align-items:center;gap:var(--space-sm);font-family:var(--font-mono);font-size:.75rem;color:var(--color-text-dim);letter-spacing:.1em;opacity:0;animation:fi 1.5s var(--ease-out-expo) .5s forwards}
+.date-separator{color:var(--color-red)}.date-temp{color:var(--color-red);font-weight:500}
+.title-main{text-align:center;margin-bottom:var(--space-xl)}
+.title-jp{display:flex;justify-content:center;gap:.15em;margin-bottom:var(--space-md)}
+.title-jp .char{font-family:var(--font-mincho);font-size:clamp(2.5rem,7vw,4.5rem);font-weight:900;color:var(--color-text);opacity:0;transform:translateY(20px);animation:cr .8s var(--ease-out-expo) calc(var(--i)*.12s + .8s) forwards;position:relative;display:inline-block}
+.title-jp .char::after{content:'';position:absolute;bottom:-4px;left:0;width:100%;height:2px;background:var(--color-red);transform:scaleX(0);transform-origin:left;animation:ug .6s var(--ease-out-expo) calc(var(--i)*.12s + 1.4s) forwards}
+.title-en{font-family:var(--font-mono);font-size:clamp(.5rem,1.5vw,.75rem);letter-spacing:.3em;color:var(--color-text-dim);text-transform:uppercase;opacity:0;animation:fi 1s var(--ease-out-expo) 2s forwards}
+.title-sub{font-family:var(--font-handwrite);font-size:clamp(.8rem,2vw,1rem);color:var(--color-red);margin-top:var(--space-md);opacity:0;animation:fi 1.5s var(--ease-out-expo) 2.5s forwards}
+.title-menu{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-xs);opacity:0;animation:fi 1s var(--ease-out-expo) 3s forwards}
+.menu-item{display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);font-family:var(--font-gothic);font-size:.95rem;font-weight:400;color:var(--color-text);letter-spacing:.15em;position:relative;transition:all var(--duration-fast) var(--ease-out-expo)}
+.menu-marker{font-size:.7rem;color:var(--color-red);opacity:0;transform:translateX(-8px);transition:all var(--duration-fast) var(--ease-out-expo)}
+.menu-item:hover .menu-marker{opacity:1;transform:translateX(0)}
+.menu-item:hover .menu-text{transform:translateX(4px);color:var(--color-red)}
+.menu-text{transition:all var(--duration-fast) var(--ease-out-expo)}
+.menu-item::after{content:'';position:absolute;bottom:4px;left:var(--space-md);right:var(--space-md);height:1px;background:var(--color-red);transform:scaleX(0);transform-origin:left;transition:transform var(--duration-fast) var(--ease-out-expo)}
+.menu-item:hover::after{transform:scaleX(1)}
+.menu-item:active{transform:scale(.98)}
+.menu-item:disabled{opacity:.3;pointer-events:none}
+.death-counter{position:absolute;bottom:var(--space-xl);right:var(--space-lg);text-align:right;opacity:0;animation:fi 1.5s var(--ease-out-expo) 3.5s forwards}
+.counter-label{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.3em;color:var(--color-text-dim);margin-bottom:var(--space-xs)}
+.counter-number{display:flex;gap:2px;justify-content:flex-end}
+.digit{font-family:var(--font-mono);font-size:2rem;font-weight:300;color:var(--color-red);line-height:1;min-width:1.2em;text-align:center}
+.title-quote{position:absolute;bottom:var(--space-lg);left:var(--space-lg);max-width:400px;opacity:0;animation:fi 2s var(--ease-out-expo) 4s forwards}
+.title-quote p{font-family:var(--font-mincho);font-size:.8rem;font-weight:300;color:var(--color-text-dim);line-height:1.8;font-style:italic}
+.title-quote cite{display:block;font-family:var(--font-mono);font-size:.6rem;color:var(--color-text-dim);opacity:.6;margin-top:var(--space-xs);letter-spacing:.05em}
+.cicada-hint{position:absolute;bottom:var(--space-xl);left:50%;transform:translateX(-50%);z-index:var(--z-content);opacity:0;animation:fi 1s var(--ease-out-expo) 5s forwards}
+.cicada-hint span{font-family:var(--font-gothic);font-size:.7rem;color:var(--color-text-dim);letter-spacing:.2em;animation:cicada 3s ease-in-out infinite}
+@keyframes cr{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ug{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes fi{from{opacity:0}to{opacity:1}}
