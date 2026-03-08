@@ -1,10 +1,5 @@
-/**
- * 世纪末异邦人 — 存档系统
- */
-
 const SaveManager = {
     SAVE_KEY: 'century_end_strangers_save',
-
     defaultData() {
         return {
             deathCount: 0,
@@ -16,87 +11,41 @@ const SaveManager = {
             currentTemp: 37.5,
             timeOfDay: 'day',
             dayIndex: 0,
-
-            player: {
-                name: '夏目珀',
-                logos: 4.2,
-                maxLogos: 10,
-                quotes: [],
-            },
-
+            player: { name: '夏目珀', logos: 4.2, maxLogos: 10, quotes: [] },
             dialectics: [],
-
-            bonds: {
-                mikuriya: 0,
-                takashiro: 0,
-                kuga: 0,
-                horita: 0,
-                fujimori: 0,
-            },
-
+            bonds: { mikuriya: 0, takashiro: 0, kuga: 0, horita: 0, fujimori: 0 },
             flags: {},
             visitedLocations: ['teibow'],
             unlockedLocations: ['teibow', 'school', 'vendingMachine'],
             completedEvents: [],
-
             deathMemories: [],
-
-            settings: {
-                textSpeed: 'normal',
-                bgmVolume: 0.5,
-                seVolume: 0.7,
-            },
-
+            settings: { textSpeed: 'normal', bgmVolume: 0.5, seVolume: 0.7 },
             totalPlayTime: 0,
             lastSaved: null,
         };
     },
-
     load() {
-        try {
-            const raw = localStorage.getItem(this.SAVE_KEY);
-            if (!raw) return null;
-            return JSON.parse(raw);
-        } catch (e) {
-            return null;
-        }
+        try { const r = localStorage.getItem(this.SAVE_KEY); return r ? JSON.parse(r) : null; }
+        catch(e) { return null; }
     },
-
     save(data) {
-        try {
-            data.lastSaved = Date.now();
-            localStorage.setItem(this.SAVE_KEY, JSON.stringify(data));
-        } catch (e) {
-            console.warn('[Save] 失败', e);
-        }
+        try { data.lastSaved = Date.now(); localStorage.setItem(this.SAVE_KEY, JSON.stringify(data)); }
+        catch(e) {}
     },
-
-    createNew() {
-        const data = this.defaultData();
-        this.save(data);
-        return data;
-    },
-
-    hasSave() {
-        return localStorage.getItem(this.SAVE_KEY) !== null;
-    },
-
-    deathReset(data, deathMemory) {
-        const preserved = {
+    createNew() { const d = this.defaultData(); this.save(d); return d; },
+    hasSave() { return localStorage.getItem(this.SAVE_KEY) !== null; },
+    deathReset(data, mem) {
+        const p = {
             deathCount: data.deathCount + 1,
             dialectics: [...data.dialectics],
             bonds: { ...data.bonds },
-            deathMemories: [...data.deathMemories, deathMemory],
+            deathMemories: [...data.deathMemories, mem],
             settings: { ...data.settings },
             totalPlayTime: data.totalPlayTime,
             completedEvents: [...(data.completedEvents || [])],
             visitedLocations: [...(data.visitedLocations || [])],
         };
-        const fresh = this.defaultData();
-        return { ...fresh, ...preserved };
+        return { ...this.defaultData(), ...p };
     },
-
-    clear() {
-        localStorage.removeItem(this.SAVE_KEY);
-    }
+    clear() { localStorage.removeItem(this.SAVE_KEY); }
 };
