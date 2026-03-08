@@ -1,0 +1,141 @@
+/* ============================
+   对话界面
+   ============================ */
+
+#dialogue-screen {
+    background-color: var(--color-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dialogue-content {
+    position: relative;
+    z-index: var(--z-content);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: var(--space-xl) var(--space-lg) var(--space-lg);
+}
+
+/* —— 说话者名字 —— */
+.dialogue-speaker {
+    font-family: var(--font-mincho);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-amber);
+    letter-spacing: 0.2em;
+    margin-bottom: var(--space-sm);
+    padding-left: var(--space-xs);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all var(--duration-normal) var(--ease-out-expo);
+}
+
+.dialogue-speaker.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* —— 对话文本区 —— */
+.dialogue-text-area {
+    background: rgba(10, 10, 10, 0.85);
+    border: 1px solid rgba(245, 240, 232, 0.08);
+    border-radius: 2px;
+    padding: var(--space-lg) var(--space-lg);
+    min-height: 140px;
+    margin-bottom: var(--space-md);
+    position: relative;
+}
+
+.dialogue-text {
+    font-family: var(--font-gothic);
+    font-size: 0.95rem;
+    font-weight: 300;
+    color: var(--color-paper);
+    line-height: 2;
+    letter-spacing: 0.05em;
+}
+
+/* —— 选项 —— */
+.dialogue-choices {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding-left: var(--space-md);
+}
+
+.dialogue-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    font-family: var(--font-gothic);
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--color-paper);
+    opacity: 0.7;
+    letter-spacing: 0.1em;
+    transition: all var(--duration-fast) var(--ease-out-expo);
+    cursor: pointer;
+    position: relative;
+}
+
+.dialogue-choice::before {
+    content: '▸';
+    color: var(--color-red);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: all var(--duration-fast) var(--ease-out-expo);
+    flex-shrink: 0;
+}
+
+.dialogue-choice:hover {
+    opacity: 1;
+    color: var(--color-red);
+}
+
+.dialogue-choice:hover::before {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* 需要死亡次数解锁的选项 */
+.dialogue-choice.locked {
+    opacity: 0.25;
+    pointer-events: none;
+    font-style: italic;
+}
+
+.dialogue-choice.locked::after {
+    content: attr(data-lock-hint);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--color-red);
+    margin-left: var(--space-sm);
+    opacity: 0.5;
+}
+
+/* —— 继续提示 —— */
+.dialogue-continue {
+    position: absolute;
+    bottom: var(--space-lg);
+    right: var(--space-lg);
+    color: var(--color-paper);
+    opacity: 0;
+    font-size: 0.8rem;
+    animation: continue-pulse 1.5s ease-in-out infinite;
+    cursor: pointer;
+    z-index: var(--z-content);
+}
+
+.dialogue-continue.visible {
+    opacity: 0.5;
+}
+
+@keyframes continue-pulse {
+    0%, 100% { transform: translateX(0); opacity: 0.3; }
+    50%      { transform: translateX(4px); opacity: 0.7; }
+}
