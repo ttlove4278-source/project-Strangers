@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>世紀末異邦人 — Strangers at the End of the Century</title>
+    <title>世紀末異邦人</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@200;300;400;500;600;700;900&family=Noto+Sans+JP:wght@100;300;400;500;700&family=Zen+Kurenaido&family=Source+Code+Pro:wght@300;400;500&display=swap" rel="stylesheet">
@@ -16,113 +16,114 @@
     <link rel="stylesheet" href="css/battle.css">
 </head>
 <body>
-    <!-- 标题 -->
-    <div id="title-screen" class="screen active">
-        <div class="crt-overlay"></div><div class="heat-haze"></div><div class="noise-layer"></div>
-        <div class="title-content">
-            <div class="title-date"><span class="date-text">1999.7.13</span><span class="date-separator">—</span><span class="date-temp">37.5℃</span></div>
-            <div class="title-main">
-                <div class="title-jp"><span class="char" style="--i:0">世</span><span class="char" style="--i:1">紀</span><span class="char" style="--i:2">末</span><span class="char" style="--i:3">異</span><span class="char" style="--i:4">邦</span><span class="char" style="--i:5">人</span></div>
-                <div class="title-en"><span>STRANGERS AT THE END OF THE CENTURY</span></div>
-                <div class="title-sub"><span>— 推石头的人们 —</span></div>
-            </div>
-            <nav class="title-menu">
-                <button class="menu-item" data-action="new-game"><span class="menu-marker">▸</span><span class="menu-text">开始推石头</span></button>
-                <button class="menu-item" data-action="continue" id="btn-continue"><span class="menu-marker">▸</span><span class="menu-text">继续</span></button>
-                <button class="menu-item" data-action="death-memory"><span class="menu-marker">▸</span><span class="menu-text">死亡记忆</span></button>
-                <button class="menu-item" data-action="settings"><span class="menu-marker">▸</span><span class="menu-text">设定</span></button>
-            </nav>
-            <div class="death-counter"><div class="counter-label">DEATH COUNT</div><div class="counter-number"><span class="digit" id="digit-0">0</span><span class="digit" id="digit-1">0</span><span class="digit" id="digit-2">0</span></div></div>
-            <div class="title-quote"><p>「我们必须想象西西弗是幸福的。」</p><cite>— 阿尔贝·加缪《西西弗神话》</cite></div>
+
+<div id="title-screen" class="screen active">
+    <div class="crt-overlay"></div>
+    <div class="heat-haze"></div>
+    <div class="noise-layer"></div>
+    <div class="title-content">
+        <div class="title-date">
+            <span class="date-text">1999.7.13</span>
+            <span class="date-separator">—</span>
+            <span class="date-temp">37.5℃</span>
         </div>
-        <div class="cicada-hint"><span>蝉在叫。点击任意处。</span></div>
-    </div>
-
-    <!-- 过渡 -->
-    <div id="transition-screen" class="screen"><div class="crt-shutdown"></div></div>
-
-    <!-- 对话 -->
-    <div id="dialogue-screen" class="screen">
-        <div class="crt-overlay"></div><div class="noise-layer"></div>
-        <div class="dialogue-content">
-            <div class="dialogue-atmosphere" id="dialogue-atmosphere"></div>
-            <div class="dialogue-speaker" id="dialogue-speaker"></div>
-            <div class="dialogue-text-area"><p class="dialogue-text" id="dialogue-text"></p></div>
-            <div class="dialogue-choices" id="dialogue-choices"></div>
-            <div class="dialogue-continue" id="dialogue-continue"><span>▸</span></div>
+        <div class="title-main">
+            <div class="title-jp">
+                <span class="char" style="--i:0">世</span><span class="char" style="--i:1">紀</span><span class="char" style="--i:2">末</span><span class="char" style="--i:3">異</span><span class="char" style="--i:4">邦</span><span class="char" style="--i:5">人</span>
+            </div>
+            <div class="title-en"><span>STRANGERS AT THE END OF THE CENTURY</span></div>
+            <div class="title-sub"><span>— 推石头的人们 —</span></div>
+        </div>
+        <nav class="title-menu">
+            <button class="menu-item" data-action="new-game"><span class="menu-marker">▸</span><span class="menu-text">开始推石头</span></button>
+            <button class="menu-item" data-action="continue" id="btn-continue"><span class="menu-marker">▸</span><span class="menu-text">继续</span></button>
+            <button class="menu-item" data-action="death-memory"><span class="menu-marker">▸</span><span class="menu-text">死亡记忆</span></button>
+            <button class="menu-item" data-action="settings"><span class="menu-marker">▸</span><span class="menu-text">设定</span></button>
+        </nav>
+        <div class="death-counter">
+            <div class="counter-label">DEATH COUNT</div>
+            <div class="counter-number"><span class="digit" id="digit-0">0</span><span class="digit" id="digit-1">0</span><span class="digit" id="digit-2">0</span></div>
+        </div>
+        <div class="title-quote">
+            <p>「我们必须想象西西弗是幸福的。」</p>
+            <cite>— 阿尔贝·加缪《西西弗神话》</cite>
         </div>
     </div>
+    <div class="cicada-hint"><span>蝉在叫。点击任意处。</span></div>
+</div>
 
-    <!-- 探索 -->
-    <div id="exploration-screen" class="screen">
-        <div class="crt-overlay"></div><div class="noise-layer"></div>
-        <div class="exploration-content">
-            <header class="status-bar">
-                <div class="status-date"><span id="current-date">1999.7.13 (火)</span><span id="current-time">15:42</span></div>
-                <div class="status-temp"><span id="current-temp">37.5℃</span></div>
-            </header>
-            <div class="location-title"><h2 id="location-name">堤防</h2><p class="location-desc" id="location-desc"></p></div>
-            <div class="narrative-area" id="narrative-area"></div>
-            <div class="choices-area" id="choices-area"></div>
-            <div class="nav-area" id="nav-area"></div>
-            <footer class="bottom-bar">
-                <div class="logos-bar"><span class="logos-label">LOGOS</span><div class="logos-gauge"><div class="logos-fill" id="logos-fill" style="width:42%"></div></div><span class="logos-value" id="logos-value">4.2 赫</span></div>
-                <div class="death-count-small"><span>DEATH:</span><span id="death-count-display">327</span></div>
-            </footer>
+<div id="transition-screen" class="screen"><div class="crt-shutdown"></div></div>
+
+<div id="dialogue-screen" class="screen">
+    <div class="crt-overlay"></div>
+    <div class="noise-layer"></div>
+    <div class="dialogue-content">
+        <div class="dialogue-atmosphere" id="dialogue-atmosphere"></div>
+        <div class="dialogue-speaker" id="dialogue-speaker"></div>
+        <div class="dialogue-text-area"><p class="dialogue-text" id="dialogue-text"></p></div>
+        <div class="dialogue-choices" id="dialogue-choices"></div>
+        <div class="dialogue-continue" id="dialogue-continue"><span>▸</span></div>
+    </div>
+</div>
+
+<div id="exploration-screen" class="screen">
+    <div class="crt-overlay"></div>
+    <div class="noise-layer"></div>
+    <div class="exploration-content">
+        <header class="status-bar">
+            <div class="status-date"><span id="current-date">1999.7.13 (火)</span><span id="current-time">15:42</span></div>
+            <div class="status-temp"><span id="current-temp">37.5℃</span></div>
+        </header>
+        <div class="location-title"><h2 id="location-name">堤防</h2><p class="location-desc" id="location-desc"></p></div>
+        <div class="narrative-area" id="narrative-area"></div>
+        <div class="choices-area" id="choices-area"></div>
+        <div class="nav-area" id="nav-area"></div>
+        <footer class="bottom-bar">
+            <div class="logos-bar"><span class="logos-label">LOGOS</span><div class="logos-gauge"><div class="logos-fill" id="logos-fill" style="width:42%"></div></div><span class="logos-value" id="logos-value">4.2 赫</span></div>
+            <div class="death-count-small"><span>DEATH:</span><span id="death-count-display">0</span></div>
+        </footer>
+    </div>
+</div>
+
+<div id="battle-screen" class="screen">
+    <div class="crt-overlay"></div>
+    <div class="noise-layer"></div>
+    <div class="battle-content">
+        <div class="battle-header">
+            <div class="battle-actor"><div class="battle-actor-name" id="battle-player-name">夏目珀</div><div class="battle-actor-source" id="battle-player-source">CAMUS</div><div class="battle-logos-bar"><div class="battle-logos-fill player" id="battle-player-logos" style="width:100%"></div></div><div class="battle-logos-text" id="battle-player-logos-text"></div></div>
+            <div class="battle-vs">VS</div>
+            <div class="battle-actor"><div class="battle-actor-name" id="battle-enemy-name">???</div><div class="battle-actor-source" id="battle-enemy-source">???</div><div class="battle-logos-bar"><div class="battle-logos-fill enemy" id="battle-enemy-logos" style="width:100%"></div></div><div class="battle-logos-text" id="battle-enemy-logos-text"></div></div>
+        </div>
+        <div class="battle-turn" id="battle-turn">TURN 1</div>
+        <div class="battle-stage"><div class="battle-narration" id="battle-narration"></div><div class="battle-declaration" id="battle-declaration"></div></div>
+        <div class="battle-actions" id="battle-actions-panel">
+            <div class="battle-actions-label">ACTIONS</div>
+            <div class="battle-actions-grid" id="battle-actions-grid"></div>
+            <div class="battle-hand" id="battle-hand"></div>
+        </div>
+        <div class="battle-result" id="battle-result">
+            <div class="battle-result-title" id="battle-result-title"></div>
+            <div class="battle-result-text" id="battle-result-text"></div>
+            <button class="battle-result-btn" id="battle-result-btn">继续</button>
         </div>
     </div>
+</div>
 
-    <!-- 战斗 -->
-    <div id="battle-screen" class="screen">
-        <div class="crt-overlay"></div><div class="noise-layer"></div>
-        <div class="battle-content">
-            <div class="battle-header">
-                <div class="battle-actor" id="battle-player">
-                    <div class="battle-actor-name" id="battle-player-name">夏目珀</div>
-                    <div class="battle-actor-source" id="battle-player-source">CAMUS</div>
-                    <div class="battle-logos-bar"><div class="battle-logos-fill player" id="battle-player-logos" style="width:100%"></div></div>
-                    <div class="battle-logos-text" id="battle-player-logos-text">4.2 / 10 赫</div>
-                </div>
-                <div class="battle-vs">VS</div>
-                <div class="battle-actor" id="battle-enemy">
-                    <div class="battle-actor-name" id="battle-enemy-name">???</div>
-                    <div class="battle-actor-source" id="battle-enemy-source">???</div>
-                    <div class="battle-logos-bar"><div class="battle-logos-fill enemy" id="battle-enemy-logos" style="width:100%"></div></div>
-                    <div class="battle-logos-text" id="battle-enemy-logos-text">? / ? 赫</div>
-                </div>
-            </div>
-            <div class="battle-turn" id="battle-turn">TURN 1</div>
-            <div class="battle-stage"><div class="battle-narration" id="battle-narration"></div><div class="battle-declaration" id="battle-declaration"></div></div>
-            <div class="battle-actions" id="battle-actions-panel">
-                <div class="battle-actions-label">ACTIONS</div>
-                <div class="battle-actions-grid" id="battle-actions-grid"></div>
-                <div class="battle-hand" id="battle-hand"></div>
-            </div>
-            <div class="battle-result" id="battle-result">
-                <div class="battle-result-title" id="battle-result-title"></div>
-                <div class="battle-result-text" id="battle-result-text"></div>
-                <button class="battle-result-btn" id="battle-result-btn">继续</button>
-            </div>
-        </div>
-    </div>
+<div class="notification" id="notification"></div>
+<div class="screen-flash" id="screen-flash"></div>
 
-    <!-- 全局 -->
-    <div class="notification" id="notification"></div>
-    <div class="screen-flash" id="screen-flash"></div>
-
-    <!-- 脚本 -->
-    <script src="js/engine/save.js"></script>
-    <script src="js/engine/scene-manager.js"></script>
-    <script src="js/ui/effects.js"></script>
-    <script src="js/ui/audio.js"></script>
-    <script src="js/ui/transitions.js"></script>
-    <script src="js/engine/dialogue.js"></script>
-    <script src="js/engine/battle.js"></script>
-    <script src="js/data/locations.js"></script>
-    <script src="js/data/story-scripts.js"></script>
-    <script src="js/data/enemies.js"></script>
-    <script src="js/data/chapters/chapter1.js"></script>
-    <script src="js/engine/exploration.js"></script>
-    <script src="js/main.js"></script>
+<script src="js/engine/save.js"></script>
+<script src="js/engine/scene-manager.js"></script>
+<script src="js/ui/effects.js"></script>
+<script src="js/ui/audio.js"></script>
+<script src="js/ui/transitions.js"></script>
+<script src="js/engine/dialogue.js"></script>
+<script src="js/engine/battle.js"></script>
+<script src="js/data/locations.js"></script>
+<script src="js/data/story-scripts.js"></script>
+<script src="js/data/enemies.js"></script>
+<script src="js/data/chapters/chapter1.js"></script>
+<script src="js/engine/exploration.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
