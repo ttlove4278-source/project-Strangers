@@ -26,7 +26,6 @@ const ExplorationEngine = {
         this.gameState.currentLocation = locId;
         this.completedActionsThisVisit = [];
 
-        // 时段样式
         const screen = document.getElementById('exploration-screen');
         screen.classList.remove('evening', 'night');
         if (this.gameState.timeOfDay === 'evening') screen.classList.add('evening');
@@ -36,7 +35,6 @@ const ExplorationEngine = {
             await Transitions.locationChange();
         }
 
-        // 地点BGM
         AudioManager.playLocationBGM(locId, this.gameState.timeOfDay);
 
         this.updateHeader(loc);
@@ -109,7 +107,6 @@ const ExplorationEngine = {
             });
         }
 
-        // 故事提示
         const hint = this.getStoryHint();
         if (hint) {
             const h = document.createElement('div');
@@ -141,6 +138,12 @@ const ExplorationEngine = {
             return '——她在图书馆。和昨天一样的位置。也许该坐过去。';
         if (s.flags.bentham_encounter_ready && !s.flags.bentham_confronted)
             return '——旧神社的石阶上，有人在喃喃自语。空气在扭曲。';
+        if (s.flags.bentham_confronted && s.flags.nine_contact && !s.flags.battle_bentham_weak_won && s.dayIndex >= 3)
+            return '——旧神社。那个男人还在那里。这次——你要阻止他。';
+        if (s.flags.battle_bentham_weak_won && s.dayIndex >= 5 && !s.flags.battle_cultist_scout_won)
+            return '——站前广场出现了穿白袍的人。不是好兆头。';
+        if (s.flags.battle_bentham_weak_won && s.dayIndex >= 7 && !s.flags.battle_bentham_strong_won)
+            return '——旧神社。空气又在扭曲了。比上次更严重。';
         if (s.flags.promised_library && s.timeOfDay === 'evening' && !s.flags.evening_mikuriya_teibow && s.dayIndex >= 1)
             return '——傍晚了。堤防上也许……有人在等。';
         return null;
@@ -166,7 +169,6 @@ const ExplorationEngine = {
             if (action.important) btn.classList.add('important');
             btn.textContent = action.text;
 
-            // NEW 标记：该行动是否第一次出现
             const actionKey = `${loc.id}_${action.id}`;
             if (!this.shownActionsEver[actionKey]) {
                 const tag = document.createElement('span');
@@ -216,6 +218,13 @@ const ExplorationEngine = {
             'thursday_kids': () => this.playWithCB(StoryScripts.thursday_kids, () => {
                 this.gameState.flags.saw_thursday_kids = true;
             }),
+            'horita_deep_talk': () => this.playWithCB(StoryScripts.horita_deep_talk, () => {
+                this.gameState.flags.horita_deep_done = true;
+                Effects.notify('堀田诚の「枷锁」を知った', 2500);
+            }),
+            'battle_bentham': () => this.triggerBattle('bentham_weak'),
+            'battle_bentham_boss': () => this.triggerBattle('bentham_strong'),
+            'battle_cultist': () => this.triggerBattle('cultist_scout'),
         };
 
         if (handlers[action.scene]) { await handlers[action.scene](); return; }
@@ -225,7 +234,10 @@ const ExplorationEngine = {
             await this.playWithCB(script, () => {
                 if (action.setFlag) this.gameState.flags[action.setFlag] = true;
                 if (action.logosGain) {
-                    this.gameState.player.logos = Math.min(this.gameState.player.maxLogos, this.gameState.player.logos + action.logosGain);
+                    this.gameState.player.logos = Math.min(
+                        this.gameState.player.maxLogos,
+                        this.gameState.player.logos + action.logosGain
+                    );
                 }
             });
         }
@@ -236,6 +248,40 @@ const ExplorationEngine = {
             if (cb) cb();
             SaveManager.save(this.gameState);
             this.enter(this.gameState.currentLocation);
+        });
+    },
+
+    async triggerBattle(enemyId) {
+        const enemy = EnemyData[enemyId];
+        if (!enemy) return;
+
+        BattleEngine.init(this.gameState);
+        await BattleEngine.startBattle(enemy, async (result) => {
+            if (result === 'win') {
+                this.gameState.flags[`battle_${enemyId}_won`] = true;
+
+                if (enemyId === 'bentham_weak') {
+                    this.gameState.player.quotes.push(
+                        { source: 'BENTHAM', name: '功利反转', effect: '造成2赫伤害', cost: 1.0 }
+                    );
+                    Effects.notify('引用碎片を獲得：BENTHAM·功利反转', 3000);
+                } else if (enemyId === 'bentham_strong') {
+                    this.gameState.player.maxLogos += 2;
+                    this.gameState.player.logos = this.gameState.player.maxLogos;
+                    Effects.notify('逻各斯上限+2　命題が深まった', 3000);
+                } else if (enemyId === 'cultist_scout') {
+                    this.gameState.player.quotes.push(
+                        { source: 'AUGUSTINE', name: '当下', effect: '造成1.5赫伤害', cost: 0.8 }
+                    );
+                    Effects.notify('引用碎片を獲得：AUGUSTINE·当下', 3000);
+                }
+
+                SaveManager.save(this.gameState);
+                await Effects.wait(500);
+                await this.enter(this.gameState.currentLocation);
+            } else {
+                await Game.handleDeath(`在与${enemy.name}的战斗中被命题吞噬`);
+            }
         });
     },
 
@@ -346,74 +392,67 @@ const ExplorationEngine = {
             { speaker: null, text: '图书馆的角落。最里面的书架旁边。', atmosphere: '空调声。翻页声。很远的蝉鸣。' },
             { speaker: null, text: '一个女生坐在地上，靠着书架。膝盖上放着一本打开的书。' },
             { speaker: null, text: '黑发齐肩，低马尾。碎发很多。校服裙子的褶皱在膝盖那里展开。书包上挂着一个塑料海豚——磨损很严重，漆都掉了，只剩模糊的蓝色轮廓。' },
-            { speaker: null, text: '小学的时候买的吧。一直没换。不是舍不得。是忘了。或者是——不需要换。' },
             { speaker: null, text: '她在看什么？\n——《国家》。柏拉图。翻到了洞穴寓言那一节。' },
             { speaker: null, text: '她抬起头。浅褐色的瞳孔。\n看了你一秒。不是惊讶。也不是戒备。\n是——确认。确认你是真的，不是影子。\n然后又低下头。' },
             {
                 speaker: null,
-                text: '……\n你应该离开。你和她没有交集。\n二年三组有37个人，你不认识其中的大部分。\n她坐在教室里的时候，你甚至不记得她坐在哪里。',
+                text: '……\n你应该离开。你和她没有交集。\n二年三组有37个人，你不认识其中的大部分。',
                 choices: [
-                    { text: '离开。', next: 15 },
+                    { text: '离开。', next: 13 },
                     { text: '「……在看柏拉图？」', bondChange: { mikuriya: 1 }, next: 7 },
                     { text: '（坐在旁边的书架前，不说话）', bondChange: { mikuriya: 2 }, next: 10 },
                 ]
             },
-            // 7: 搭话
+            // 7
             { speaker: '御厨光', text: '「…………嗯。」' },
-            { speaker: null, text: '她的声音很小。不是害羞。是习惯了不被听见。\n声带在很久以前就把音量校准到了「不打扰任何人」的档位。' },
+            { speaker: null, text: '她的声音很小。不是害羞。是习惯了不被听见。' },
             {
                 speaker: '御厨光', text: '「你也看哲学书吗？」',
                 choices: [
-                    { text: '「算是吧。加缪。」', bondChange: { mikuriya: 1 }, next: 17 },
-                    { text: '「不看。只是路过。」', next: 15 },
+                    { text: '「算是吧。加缪。」', bondChange: { mikuriya: 1 }, next: 15 },
+                    { text: '「不看。只是路过。」', next: 13 },
                 ]
             },
-            // 10: 坐下
-            { speaker: null, text: '你靠着对面的书架坐下来。地板凉的。空调的风从头顶吹过，带着旧书的气味。' },
-            { speaker: null, text: '没有说话。她也没有说话。\n翻页声。空调声。远处有人在走廊里跑步——橡胶鞋底和地板的摩擦声。' },
-            { speaker: null, text: '时间过去了。你不确定是五分钟还是半小时。在这种沉默里，时间的尺度会失效。' },
+            // 10
+            { speaker: null, text: '你靠着对面的书架坐下来。地板凉的。空调的风从头顶吹过。' },
+            { speaker: null, text: '没有说话。她也没有说话。时间过去了——也许五分钟，也许半小时。' },
             { speaker: '御厨光', text: '「……你不问我在看什么吗？」' },
             {
-                speaker: null, text: '她的声音比你想象的要轻。像是从很远的地方传来。\n——不是距离的远。是层级的远。像隔了一层玻璃。',
+                speaker: null, text: '她的声音比你想象的要轻。',
                 choices: [
-                    { text: '「不想看就不看。」', bondChange: { mikuriya: 3 }, setFlag: 'said_dont_look', next: 17 },
-                    { text: '「在看柏拉图？」', bondChange: { mikuriya: 1 }, next: 17 },
+                    { text: '「不想看就不看。」', bondChange: { mikuriya: 3 }, setFlag: 'said_dont_look', next: 15 },
+                    { text: '「在看柏拉图？」', bondChange: { mikuriya: 1 }, next: 15 },
                 ]
             },
-            // 15: 离开
-            { speaker: null, text: '你转身离开。脚步声在书架之间回响——一声、两声。\n她的视线在你背后停留了一秒。然后，翻页声又响了。' },
-            { speaker: null, text: '——你错过了什么。\n但你不知道你错过了什么。\n也许只是一段无关紧要的对话。也许是别的。\n你不会知道了。' },
-            // 17: 展开
-            { speaker: null, text: '她抬起头，看了你一眼。这一次看得久了一点。\n不是在看你的脸。是在看你脸后面的什么。' },
+            // 13
+            { speaker: null, text: '你转身离开。她的视线在你背后停留了一秒。然后，翻页声又响了。' },
+            { speaker: null, text: '——你错过了什么。但你不知道你错过了什么。' },
+            // 15
+            { speaker: null, text: '她抬起头，看了你一眼。这一次看得久了一点。' },
             { speaker: '御厨光', text: '「柏拉图说——我们看见的一切都是影子。」' },
-            { speaker: '御厨光', text: '「火焰在洞穴外面。我们背对火焰。看见的只是墙壁上的投影。」' },
-            { speaker: '御厨光', text: '「我从小就觉得……这个世界像投影。走在路上，忽然觉得一切都不太真实。电线杆、红绿灯、便利店的门……像是画上去的。」' },
-            { speaker: null, text: '她把书合上。塑料海豚挂件晃了一下。金属环碰撞的细微声音。' },
-            { speaker: '御厨光', text: '「小学三年级的时候，我问过妈妈——我们现在说的话，会不会是有人在梦里梦见我们。」' },
-            { speaker: '御厨光', text: '「妈妈说，别想奇怪的事。」' },
-            { speaker: null, text: '她的嘴角动了一下。不是笑。是「曾经想笑、后来放弃了、现在嘴角还记得那个弧度」的痕迹。' },
+            { speaker: '御厨光', text: '「我从小就觉得……这个世界像投影。走在路上，忽然觉得一切都不太真实。」' },
+            { speaker: null, text: '她把书合上。塑料海豚挂件晃了一下。' },
             {
                 speaker: '御厨光', text: '「你呢？你觉得……这个世界是真的吗？」',
                 choices: [
-                    { text: '「不知道。但蝉鸣是真的。」', bondChange: { mikuriya: 2 }, next: 27 },
-                    { text: '「真不真的，都得活下去。」', bondChange: { mikuriya: 1 }, next: 29 },
-                    { text: '「我死过327次了。每一次都很真实。」', requiredDeaths: 5, bondChange: { mikuriya: 5 }, setFlag: 'told_mikuriya_deaths', next: 31 },
+                    { text: '「不知道。但蝉鸣是真的。」', bondChange: { mikuriya: 2 }, next: 20 },
+                    { text: '「真不真的，都得活下去。」', bondChange: { mikuriya: 1 }, next: 22 },
+                    { text: '「我死过327次了。每一次都很真实。」', requiredDeaths: 5, bondChange: { mikuriya: 5 }, setFlag: 'told_mikuriya_deaths', next: 24 },
                 ]
             },
-            // 27
-            { speaker: null, text: '她愣了一下。\n然后——笑了。不是嘴角的痕迹。是真的在笑。\n很小。很轻。像是怕笑声惊动了书架上的灰尘。' },
-            { speaker: '御厨光', text: '「蝉鸣……嗯。蝉鸣是真的。」\n「至少，蝉不会假装在叫。」', next: 34 },
-            // 29
-            { speaker: null, text: '她没有笑。但她的肩膀放松了一点。像是听到了一个虽然不是答案、但至少不是谎话的东西。' },
-            { speaker: '御厨光', text: '「嗯……也是。不管是影子还是真的，肚子饿了都得吃饭。」', next: 34 },
-            // 31
-            { speaker: null, text: '她的瞳孔微微放大。然后——缩小。像是相机在对焦。\n对焦在你的瞳孔上。', effect: 'particles' },
+            // 20
+            { speaker: null, text: '她愣了一下。然后——笑了。很小的笑。嘴角微微抬起。' },
+            { speaker: '御厨光', text: '「蝉鸣……嗯。蝉鸣是真的。」', next: 27 },
+            // 22
+            { speaker: null, text: '她没有笑，但点了一下头。' },
+            { speaker: '御厨光', text: '「嗯……也是。」', next: 27 },
+            // 24
+            { speaker: null, text: '她的瞳孔微微放大。然后——缩小。', effect: 'particles' },
             { speaker: '御厨光', text: '「…………你也是，论证者？」' },
-            { speaker: null, text: '这个词。你第一次听到。但你知道她在说什么。\n——就像你一直知道自己身上有什么不同，只是没人给它起过名字。', next: 34 },
-            // 34
-            { speaker: null, text: '窗外的蝉叫了。一阵接一阵。叫声从远处涌进来，像潮水，又退回去。\n空调的指示灯在闪。26度。绿色的小灯，一闪一闪，像在呼吸。' },
+            { speaker: null, text: '这个词。你第一次听到。但你知道她在说什么。', next: 27 },
+            // 27
+            { speaker: null, text: '窗外的蝉叫了。空调的指示灯在闪。26度。' },
             { speaker: '御厨光', text: '「我叫御厨光。二年三组。」' },
-            { speaker: null, text: '御厨光。你知道这个名字。点名簿上第14号。\n但知道名字和认识一个人是两回事。' },
             {
                 speaker: '御厨光', text: '「……你明天还会来图书馆吗？」',
                 choices: [
@@ -422,11 +461,10 @@ const ExplorationEngine = {
                     { text: '「明天还活着的话。」', bondChange: { mikuriya: 3 }, setFlag: 'promised_library' },
                 ]
             },
-            { speaker: null, text: '她点了一下头。动作很小。像是怕点多了就变成期待。\n她不想期待。期待是一种赌注。她不赌。' },
-            { speaker: null, text: '低下头。重新打开书。手指翻到刚才的那一页——洞穴寓言。\n但你注意到——她的嘴角，还维持着那个弧度。' },
-            { speaker: null, text: '很小。很轻。像是蝉翼上的纹路——你不仔细看就看不到。' },
+            { speaker: null, text: '她点了一下头。低下头，重新打开书。' },
+            { speaker: null, text: '但这一次——她的嘴角，还维持着那个很小的弧度。' },
             { speaker: null, text: '…………' },
-            { speaker: null, text: '图书馆的空调声。翻页声。蝉鸣。\n这些是真的。\n——也许。\n也许「也许」就够了。' },
+            { speaker: null, text: '图书馆的空调声。翻页声。蝉鸣。\n这些是真的。\n——也许。' },
         ];
 
         await DialogueEngine.play(script, () => {
