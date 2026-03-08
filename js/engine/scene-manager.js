@@ -17,8 +17,9 @@ const SceneManager = {
         if (this.transitioning) return;
         const target = this.screens[screenId];
         if (!target || this.currentScreen === target) return;
-
         this.transitioning = true;
+
+        const fromId = this.currentScreen ? this.currentScreen.id : null;
 
         if (transition === 'crt' && this.currentScreen) {
             await Transitions.crtOff();
@@ -30,11 +31,11 @@ const SceneManager = {
         target.classList.add('active');
         this.currentScreen = target;
 
-        await Effects.wait(100);
+        // 音乐过渡
+        Transitions.sceneTransition(fromId, screenId);
 
-        if (transition === 'crt') {
-            await Transitions.crtOn();
-        }
+        await Effects.wait(100);
+        if (transition === 'crt') await Transitions.crtOn();
 
         this.transitioning = false;
     },
