@@ -1,0 +1,184 @@
+/* ============================
+   探索界面
+   ============================ */
+
+#exploration-screen {
+    background-color: var(--color-paper);
+    display: flex;
+    flex-direction: column;
+}
+
+.exploration-content {
+    position: relative;
+    z-index: var(--z-content);
+    width: 100%;
+    height: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0 var(--space-lg);
+}
+
+/* —— 状态栏 —— */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid rgba(43, 43, 43, 0.1);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-dim);
+    letter-spacing: 0.1em;
+}
+
+.status-date {
+    display: flex;
+    gap: var(--space-md);
+}
+
+.status-temp {
+    color: var(--color-red);
+}
+
+/* —— 地点标题 —— */
+.location-title {
+    padding: var(--space-lg) 0;
+    border-bottom: 1px solid rgba(43, 43, 43, 0.06);
+}
+
+.location-title h2 {
+    font-family: var(--font-mincho);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--color-text);
+    letter-spacing: 0.15em;
+    margin-bottom: var(--space-xs);
+}
+
+.location-title p {
+    font-family: var(--font-gothic);
+    font-size: 0.75rem;
+    font-weight: 300;
+    color: var(--color-text-dim);
+    letter-spacing: 0.1em;
+}
+
+/* —— 叙述区 —— */
+.narrative-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-lg) 0;
+}
+
+.narrative-text {
+    font-family: var(--font-gothic);
+    font-size: 0.9rem;
+    font-weight: 300;
+    color: var(--color-text);
+    line-height: 2.2;
+    letter-spacing: 0.05em;
+}
+
+/* —— 选项区 —— */
+.choices-area {
+    padding: var(--space-md) 0 var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.choice-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    font-family: var(--font-gothic);
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--color-text);
+    letter-spacing: 0.1em;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    transition: all var(--duration-fast) var(--ease-out-expo);
+    text-align: left;
+    position: relative;
+}
+
+.choice-btn::before {
+    content: '▸';
+    color: var(--color-red);
+    font-size: 0.7rem;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: all var(--duration-fast) var(--ease-out-expo);
+}
+
+.choice-btn:hover {
+    background: rgba(230, 57, 70, 0.04);
+    border-color: rgba(230, 57, 70, 0.15);
+    color: var(--color-red);
+}
+
+.choice-btn:hover::before {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* —— 底部信息栏 —— */
+.bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) 0;
+    border-top: 1px solid rgba(43, 43, 43, 0.1);
+}
+
+.logos-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.logos-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--color-text-dim);
+}
+
+.logos-gauge {
+    width: 120px;
+    height: 4px;
+    background: rgba(43, 43, 43, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.logos-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-amber-dim), var(--color-amber));
+    border-radius: 2px;
+    transition: width var(--duration-normal) var(--ease-out-expo);
+}
+
+.logos-value {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--color-amber);
+    min-width: 50px;
+}
+
+.death-count-small {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--color-text-dim);
+    letter-spacing: 0.1em;
+}
+
+.death-count-small span:last-child {
+    color: var(--color-red);
+    font-weight: 500;
+}
