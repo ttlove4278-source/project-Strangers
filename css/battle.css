@@ -1,29 +1,98 @@
-/* ============================
-   战斗界面（Phase 3 详细开发）
-   占位
-   ============================ */
+const Game = {
+    state: null,
 
-#battle-screen {
-    background-color: var(--color-navy);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    async init() {
+        SceneManager.init();
+        this.state = SaveManager.load() || SaveManager.defaultData();
+        DialogueEngine.init(this.state);
+        ExplorationEngine.init(this.state);
+        this.updateTitleScreen();
 
-.battle-content {
-    position: relative;
-    z-index: var(--z-content);
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+        document.getElementById('title-screen').classList.add('active');
+        SceneManager.currentScreen = document.getElementById('title-screen');
+        this.bindMenuEvents();
+        this.bindFirstClick();
+    },
 
-.battle-placeholder {
-    text-align: center;
-    color: var(--color-paper);
-    font-family: var(--font-gothic);
-    font-weight: 300;
-    opacity: 0.4;
-}
+    updateTitleScreen() {
+        Effects.setDeathCounter(this.state.deathCount);
+        const btn = document.getElementById('btn-continue');
+        if (btn) btn.disabled = !this.state.flags.awakening_complete;
+    },
+
+    bindMenuEvents() {
+        document.querySelectorAll('.menu-item').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                AudioManager.playClick();
+                switch (btn.dataset.action) {
+                    case 'new-game': await this.startNewGame(); break;
+                    case 'continue': await this.continueGame(); break;
+                    case 'death-memory': this.showDeathMemories(); break;
+                    case 'settings': Effects.notify('设定 — 开发中', 1500); break;
+                }
+            });
+        });
+    },
+
+    bindFirstClick() {
+        const handler = () => {
+            AudioManager.init();
+            AudioManager.playCicada();
+            AudioManager.playCRTHum();
+            AudioManager.playWind();
+            AudioManager.playTitleBGM();
+            document.removeEventListener('click', handler);
+            document.removeEventListener('keydown', handler);
+        };
+        document.addEventListener('click', handler);
+        document.addEventListener('keydown', handler);
+    },
+
+    async startNewGame() {
+        this.state = SaveManager.createNew();
+        DialogueEngine.gameState = this.state;
+        ExplorationEngine.init(this.state);
+
+        await Effects.showChapterCard('CHAPTER 01', '世紀末の異邦人', '1999.7.13 — 蝉在叫。石头在山脚。');
+
+        await DialogueEngine.play(Chapter1.awakening, () => this.onAwakeningComplete());
+    },
+
+    async continueGame() {
+        if (!this.state?.flags.awakening_complete) { await this.startNewGame(); return; }
+        DialogueEngine.gameState = this.state;
+        ExplorationEngine.init(this.state);
+        await ExplorationEngine.enter(this.state.currentLocation);
+    },
+
+    async onAwakeningComplete() {
+        this.state.flags.awakening_complete = true;
+        this.state.currentScene = 'exploration';
+        this.state.timeOfDay = 'day';
+        this.state.dayIndex = 0;
+        this.state.unlockedLocations = ['teibow', 'vendingMachine', 'school'];
+        SaveManager.save(this.state);
+
+        await Effects.showFullscreenText('蝉在叫。太阳不会落。<br>你开始推石头。', 2500);
+        await ExplorationEngine.enter('teibow');
+    },
+
+    showDeathMemories() {
+        if (!this.state.deathMemories?.length) { Effects.notify('死亡记忆为空', 2000); return; }
+        Effects.notify(`死亡记忆: ${this.state.deathMemories.length} 件`, 2000);
+    },
+
+    async handleDeath(memory = '未记录') {
+        this.state = SaveManager.deathReset(this.state, {
+            scene: this.state.currentScene, location: this.state.currentLocation,
+            memory, timestamp: Date.now()
+        });
+        DialogueEngine.gameState = this.state;
+        ExplorationEngine.init(this.state);
+        await Transitions.deathReset(this.state.deathCount);
+        this.updateTitleScreen();
+        await SceneManager.switchTo('title-screen', 'fade');
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => Game.init());
