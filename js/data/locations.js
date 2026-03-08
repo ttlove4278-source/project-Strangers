@@ -1,5 +1,5 @@
 /**
- * 世纪末异邦人 — 地点数据（完整版）
+ * 世纪末异邦人 — 地点数据（完整版·含全部战斗触发）
  */
 
 const LocationData = {
@@ -66,7 +66,8 @@ const LocationData = {
                 id: 'sit_teibow',
                 text: '坐在堤防上',
                 condition: (s) => true,
-                scene: 'sit_teibow'
+                scene: 'sit_teibow',
+                logosGain: 0.3
             },
             {
                 id: 'look_sea',
@@ -79,7 +80,16 @@ const LocationData = {
                 text: '想起深雪',
                 important: true,
                 condition: (s) => s.flags.teibow_explored && !s.flags.remembered_miyuki_teibow,
-                scene: 'remember_miyuki'
+                scene: 'remember_miyuki',
+                setFlag: 'remembered_miyuki_teibow'
+            },
+            {
+                id: 'remember_miyuki_deep',
+                text: '……打开那个纸箱',
+                important: true,
+                condition: (s) => s.flags.remembered_miyuki_teibow && s.dayIndex >= 4 && !s.flags.miyuki_deep_done,
+                scene: 'remember_miyuki_deep',
+                setFlag: 'miyuki_deep_done'
             },
             {
                 id: 'teibow_night_think',
@@ -91,7 +101,8 @@ const LocationData = {
                 id: 'teibow_count',
                 text: '数——（确认自己还活着）',
                 condition: (s) => s.flags.teibow_explored,
-                scene: 'teibow_count'
+                scene: 'teibow_count',
+                logosGain: 0.2
             },
             {
                 id: 'teibow_evening_mikuriya',
@@ -145,19 +156,22 @@ const LocationData = {
                 id: 'buy_pocari',
                 text: '买宝矿力（100円）',
                 condition: (s) => true,
-                scene: 'buy_pocari'
+                scene: 'buy_pocari',
+                logosGain: 0.1
             },
             {
                 id: 'buy_boss',
                 text: '买BOSS咖啡（120円）',
                 condition: (s) => true,
-                scene: 'buy_boss'
+                scene: 'buy_boss',
+                logosGain: 0.2
             },
             {
                 id: 'sit_vending',
                 text: '靠着贩卖机坐下',
                 condition: (s) => s.timeOfDay === 'night',
-                scene: 'sit_vending_night'
+                scene: 'sit_vending_night',
+                logosGain: 0.3
             },
             {
                 id: 'vending_deep_night',
@@ -307,13 +321,15 @@ const LocationData = {
                 id: 'read_sisyphus',
                 text: '拿起《西西弗神话》',
                 condition: (s) => s.flags.library_visited && !s.flags.read_sisyphus_library,
-                scene: 'read_sisyphus'
+                scene: 'read_sisyphus',
+                setFlag: 'read_sisyphus_library'
             },
             {
                 id: 'library_nap',
                 text: '趴在桌上睡一会',
                 condition: (s) => s.flags.library_visited,
-                scene: 'library_nap'
+                scene: 'library_nap',
+                logosGain: 0.5
             }
         ]
     },
@@ -363,13 +379,22 @@ const LocationData = {
                 text: '和发报纸的人说话',
                 condition: (s) => s.flags.noticed_horita && !s.flags.talked_horita,
                 important: true,
-                scene: 'talk_horita'
+                scene: 'talk_horita',
+                setFlag: 'talked_horita'
             },
             {
                 id: 'talk_horita_again',
                 text: '再去找堀田',
-                condition: (s) => s.flags.talked_horita && s.timeOfDay !== 'night',
-                scene: 'talk_horita_again'
+                condition: (s) => s.flags.talked_horita && s.timeOfDay !== 'night' && !s.flags.horita_again_done,
+                scene: 'talk_horita_again',
+                setFlag: 'horita_again_done'
+            },
+            {
+                id: 'horita_deep',
+                text: '堀田好像有心事',
+                important: true,
+                condition: (s) => s.flags.talked_horita && s.dayIndex >= 2 && !s.flags.horita_deep_done,
+                scene: 'horita_deep_talk'
             },
             {
                 id: 'watch_crowd',
@@ -389,6 +414,13 @@ const LocationData = {
                 condition: (s) => s.flags.talked_horita && s.dayIndex >= 2 && !s.flags.saw_thursday_kids,
                 important: true,
                 scene: 'thursday_kids'
+            },
+            {
+                id: 'battle_cultist_1',
+                text: '白袍的人在接近——',
+                important: true,
+                condition: (s) => s.flags.battle_bentham_weak_won && s.dayIndex >= 5 && !s.flags.battle_cultist_scout_won,
+                scene: 'battle_cultist'
             }
         ]
     },
@@ -437,25 +469,29 @@ const LocationData = {
                 id: 'leave_pocari',
                 text: '把宝矿力放在旁边',
                 condition: (s) => s.flags.bridge_visited && !s.flags.left_pocari_bridge,
-                scene: 'leave_pocari'
+                scene: 'leave_pocari',
+                setFlag: 'left_pocari_bridge'
             },
             {
                 id: 'leave_coffee',
                 text: '带罗多伦咖啡来',
                 condition: (s) => s.flags.bridge_return && !s.flags.left_coffee_bridge,
-                scene: 'leave_coffee'
+                scene: 'leave_coffee',
+                setFlag: 'left_coffee_bridge'
             },
             {
                 id: 'try_talk_fujimori',
                 text: '试着说话',
-                condition: (s) => s.flags.bridge_return,
-                scene: 'try_talk_fujimori'
+                condition: (s) => s.flags.bridge_return && !s.flags.fujimori_talked,
+                scene: 'try_talk_fujimori',
+                setFlag: 'fujimori_talked'
             },
             {
                 id: 'sit_bridge',
                 text: '坐在旁边，不说话',
                 condition: (s) => s.flags.bridge_visited,
-                scene: 'sit_bridge'
+                scene: 'sit_bridge',
+                logosGain: 0.2
             }
         ]
     },
@@ -470,7 +506,7 @@ const LocationData = {
                 condition: (s) => !s.flags.shrine_visited,
                 narrative: [
                     '旧神社。',
-                    '石阶。�的鸟居褪成了灰粉色。绘马上的字被雨水冲掉了大半。',
+                    '石阶。褪色的鸟居褪成了灰粉色。绘马上的字被雨水冲掉了大半。',
                     '蝉鸣在这里特别响。也许是因为树多。也许是因为安静。',
                     '赛钱箱里有几枚1日元硬币。没有人来参拜。',
                     '——或者说，来参拜的人不想被看到。',
@@ -512,6 +548,20 @@ const LocationData = {
                 important: true,
                 condition: (s) => s.flags.bentham_encounter_ready && !s.flags.bentham_confronted,
                 scene: 'approach_bentham'
+            },
+            {
+                id: 'battle_bentham_1',
+                text: '阻止他——用你的方式',
+                important: true,
+                condition: (s) => s.flags.bentham_confronted && s.flags.nine_contact && !s.flags.battle_bentham_weak_won && s.dayIndex >= 3,
+                scene: 'battle_bentham'
+            },
+            {
+                id: 'battle_bentham_boss',
+                text: '他又回来了——这次不一样',
+                important: true,
+                condition: (s) => s.flags.battle_bentham_weak_won && s.dayIndex >= 7 && !s.flags.battle_bentham_strong_won,
+                scene: 'battle_bentham_boss'
             }
         ]
     },
@@ -553,13 +603,21 @@ const LocationData = {
                 id: 'buy_onigiri',
                 text: '买饭团（110円）',
                 condition: (s) => true,
-                scene: 'buy_onigiri'
+                scene: 'buy_onigiri',
+                logosGain: 0.1
             },
             {
                 id: 'talk_clerk',
                 text: '和店员说话',
                 condition: (s) => s.flags.convenience_visited && s.timeOfDay === 'night',
                 scene: 'talk_clerk'
+            },
+            {
+                id: 'convenience_late',
+                text: '在凌晨的便利店待着',
+                condition: (s) => s.timeOfDay === 'night' && s.flags.convenience_visited && !s.flags.convenience_late_done,
+                scene: 'convenience_late_night',
+                setFlag: 'convenience_late_done'
             }
         ]
     }
