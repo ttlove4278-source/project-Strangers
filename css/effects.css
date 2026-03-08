@@ -1,0 +1,180 @@
+/* ============================
+   视觉特效
+   CRT · 噪点 · 热浪 · 蝉鸣
+   ============================ */
+
+/* —— CRT 扫描线 —— */
+.crt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: var(--z-crt);
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.03) 0px,
+        rgba(0, 0, 0, 0.03) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+}
+
+.crt-overlay::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        ellipse at center,
+        transparent 60%,
+        rgba(0, 0, 0, 0.15) 100%
+    );
+}
+
+/* —— 噪点层 —— */
+.noise-layer {
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    pointer-events: none;
+    z-index: var(--z-noise);
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    animation: noise-shift 0.5s steps(5) infinite;
+}
+
+@keyframes noise-shift {
+    0%   { transform: translate(0, 0); }
+    20%  { transform: translate(-5%, 5%); }
+    40%  { transform: translate(3%, -3%); }
+    60%  { transform: translate(-3%, 1%); }
+    80%  { transform: translate(5%, -5%); }
+    100% { transform: translate(0, 0); }
+}
+
+/* —— 热浪扭曲 —— */
+.heat-haze {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    pointer-events: none;
+    z-index: var(--z-overlay);
+    opacity: 0.3;
+    background: linear-gradient(
+        to top,
+        rgba(230, 57, 70, 0.08) 0%,
+        transparent 100%
+    );
+    animation: heat-pulse 4s ease-in-out infinite;
+}
+
+@keyframes heat-pulse {
+    0%, 100% { opacity: 0.2; transform: scaleY(1); }
+    50%      { opacity: 0.4; transform: scaleY(1.02); }
+}
+
+/* —— CRT 关机效果 —— */
+.crt-shutdown {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--color-white);
+    z-index: var(--z-transition);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.crt-shutdown.active {
+    animation: crt-off 0.8s var(--ease-out-expo) forwards;
+}
+
+@keyframes crt-off {
+    0% {
+        opacity: 1;
+        clip-path: inset(0 0 0 0);
+    }
+    40% {
+        opacity: 1;
+        clip-path: inset(45% 0 45% 0);
+    }
+    70% {
+        opacity: 1;
+        clip-path: inset(49.5% 0 49.5% 0);
+    }
+    100% {
+        opacity: 0;
+        clip-path: inset(50% 0 50% 0);
+    }
+}
+
+/* —— 文字闪烁（蝉鸣节奏） —— */
+.cicada-blink {
+    animation: cicada 3s ease-in-out infinite;
+}
+
+@keyframes cicada {
+    0%, 100% { opacity: 0.4; }
+    30%      { opacity: 1; }
+    60%      { opacity: 0.6; }
+    80%      { opacity: 0.9; }
+}
+
+/* —— 打字机效果用的光标 —— */
+.typewriter-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background: var(--color-text);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: cursor-blink 1s steps(1) infinite;
+}
+
+@keyframes cursor-blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0; }
+}
+
+/* —— 逻各斯溢出（文字粒子） —— */
+@keyframes logos-overflow {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.5);
+    }
+}
+
+.logos-particle {
+    position: absolute;
+    color: var(--color-amber);
+    font-family: var(--font-mincho);
+    font-size: 0.7rem;
+    pointer-events: none;
+    animation: logos-overflow 2s var(--ease-out-expo) forwards;
+}
+
+/* —— 画面震动 —— */
+.screen-shake {
+    animation: shake 0.3s linear;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translate(0); }
+    20%      { transform: translate(-2px, 1px); }
+    40%      { transform: translate(2px, -1px); }
+    60%      { transform: translate(-1px, 2px); }
+    80%      { transform: translate(1px, -2px); }
+}
