@@ -1,5 +1,5 @@
 /* ============================
-   对话界面
+   对话界面（完整版）
    ============================ */
 
 #dialogue-screen {
@@ -22,7 +22,6 @@
     padding: var(--space-xl) var(--space-lg) var(--space-lg);
 }
 
-/* —— 上方场景描述区（氛围文字） —— */
 .dialogue-atmosphere {
     position: absolute;
     top: var(--space-xl);
@@ -30,12 +29,11 @@
     right: var(--space-lg);
     font-family: var(--font-mono);
     font-size: 0.6rem;
-    color: rgba(245, 240, 232, 0.2);
+    color: rgba(245, 240, 232, 0.15);
     letter-spacing: 0.2em;
     line-height: 2;
 }
 
-/* —— 说话者名字 —— */
 .dialogue-speaker {
     font-family: var(--font-mincho);
     font-size: 0.85rem;
@@ -55,7 +53,6 @@
     transform: translateX(0);
 }
 
-/* 无说话者时（旁白） */
 .dialogue-speaker.narrator {
     color: var(--color-text-faint);
     font-family: var(--font-gothic);
@@ -63,7 +60,6 @@
     font-size: 0.7rem;
 }
 
-/* —— 对话文本区 —— */
 .dialogue-text-area {
     background: rgba(10, 10, 10, 0.85);
     border: 1px solid rgba(245, 240, 232, 0.06);
@@ -87,7 +83,6 @@
     white-space: pre-wrap;
 }
 
-/* —— 选项 —— */
 .dialogue-choices {
     display: flex;
     flex-direction: column;
@@ -135,11 +130,8 @@
     transform: translateX(0);
 }
 
-.dialogue-choice:active {
-    transform: scale(0.99);
-}
+.dialogue-choice:active { transform: scale(0.99); }
 
-/* 锁定选项 */
 .dialogue-choice.locked {
     opacity: 0.2;
     pointer-events: none;
@@ -155,7 +147,6 @@
     opacity: 0.4;
 }
 
-/* —— 继续提示 —— */
 .dialogue-continue {
     position: absolute;
     bottom: var(--space-lg);
