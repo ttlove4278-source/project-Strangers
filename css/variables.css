@@ -1,55 +1,18 @@
 :root {
-    --color-paper:       #F5F0E8;
-    --color-paper-dark:  #E8E0D0;
-    --color-paper-light: #FAF7F2;
-    --color-red:         #E63946;
-    --color-red-dim:     #C62828;
-    --color-red-glow:    rgba(230, 57, 70, 0.12);
-    --color-navy:        #1D3557;
-    --color-navy-light:  #264573;
-    --color-text:        #2B2B2B;
-    --color-text-dim:    #6B6B6B;
-    --color-text-faint:  #A0A0A0;
-    --color-amber:       #FFB703;
-    --color-amber-dim:   #CC9200;
-    --color-black:       #0A0A0A;
-    --color-white:       #FAFAFA;
-    --color-crt-green:   #33FF66;
-    --color-crystal:     #A8D8EA;
-    --color-evening:     #E8C4A0;
-    --color-night:       #1A1A2E;
-    --color-night-text:  #C8C8D8;
-
-    --font-mincho:    'Noto Serif JP', 'Yu Mincho', serif;
-    --font-gothic:    'Noto Sans JP', 'Hiragino Sans', sans-serif;
-    --font-handwrite: 'Zen Kurenaido', cursive;
-    --font-mono:      'Source Code Pro', 'Courier New', monospace;
-
-    --space-xs:  4px;
-    --space-sm:  8px;
-    --space-md:  16px;
-    --space-lg:  32px;
-    --space-xl:  64px;
-    --space-xxl: 128px;
-
-    --duration-instant: 0.1s;
-    --duration-fast:    0.25s;
-    --duration-normal:  0.5s;
-    --duration-slow:    1s;
-    --duration-crawl:   2s;
-
-    --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
-    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
-    --ease-in-out:    cubic-bezier(0.4, 0, 0.2, 1);
-    --ease-out-back:  cubic-bezier(0.34, 1.56, 0.64, 1);
-
-    --z-base:       1;
-    --z-content:    10;
-    --z-ui:         50;
-    --z-overlay:    100;
-    --z-noise:      200;
-    --z-crt:        300;
-    --z-modal:      500;
-    --z-transition: 900;
-    --z-top:        999;
+    --color-paper:#F5F0E8;--color-paper-dark:#E8E0D0;--color-paper-light:#FAF7F2;
+    --color-red:#E63946;--color-red-dim:#C62828;--color-red-glow:rgba(230,57,70,0.12);
+    --color-navy:#1D3557;--color-navy-light:#264573;
+    --color-text:#2B2B2B;--color-text-dim:#6B6B6B;--color-text-faint:#A0A0A0;
+    --color-amber:#FFB703;--color-amber-dim:#CC9200;
+    --color-black:#0A0A0A;--color-white:#FAFAFA;
+    --color-evening:#E8C4A0;--color-night:#1A1A2E;--color-night-text:#C8C8D8;
+    --font-mincho:'Noto Serif JP','Yu Mincho',serif;
+    --font-gothic:'Noto Sans JP','Hiragino Sans',sans-serif;
+    --font-handwrite:'Zen Kurenaido',cursive;
+    --font-mono:'Source Code Pro','Courier New',monospace;
+    --space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:32px;--space-xl:64px;
+    --duration-instant:0.1s;--duration-fast:0.25s;--duration-normal:0.5s;--duration-slow:1s;--duration-crawl:2s;
+    --ease-out-expo:cubic-bezier(0.16,1,0.3,1);--ease-out-quart:cubic-bezier(0.25,1,0.5,1);
+    --ease-in-out:cubic-bezier(0.4,0,0.2,1);--ease-out-back:cubic-bezier(0.34,1.56,0.64,1);
+    --z-base:1;--z-content:10;--z-ui:50;--z-overlay:100;--z-noise:200;--z-crt:300;--z-modal:500;--z-transition:900;--z-top:999;
 }
