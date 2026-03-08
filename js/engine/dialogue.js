@@ -1,5 +1,5 @@
 /**
- * 世纪末异邦人 — 对话引擎
+ * 世纪末异邦人 — 对话引擎（完整版）
  */
 
 const DialogueEngine = {
@@ -49,6 +49,13 @@ const DialogueEngine = {
 
         const node = this.currentScript[this.currentIndex];
 
+        // 处理 next 跳转
+        if (node.next !== undefined && !node.choices && !node.text) {
+            this.currentIndex = node.next;
+            this.showCurrent();
+            return;
+        }
+
         const speakerEl = document.getElementById('dialogue-speaker');
         const textEl = document.getElementById('dialogue-text');
         const choicesEl = document.getElementById('dialogue-choices');
@@ -59,10 +66,7 @@ const DialogueEngine = {
         continueEl.classList.remove('visible');
         this.isWaitingChoice = false;
 
-        // 氛围文字
-        if (node.atmosphere) {
-            atmosphereEl.textContent = node.atmosphere;
-        }
+        if (node.atmosphere) atmosphereEl.textContent = node.atmosphere;
 
         // 说话者
         if (node.speaker) {
@@ -73,12 +77,33 @@ const DialogueEngine = {
             speakerEl.className = 'dialogue-speaker';
         }
 
-        // 特效
+        // 演出指令
         if (node.effect === 'shake') Effects.shake();
         if (node.effect === 'flash') Effects.flash();
         if (node.effect === 'particles') {
             Effects.spawnLogosParticles(window.innerWidth / 2, window.innerHeight / 2, 8);
         }
+
+        // 角色登场卡
+        if (node.characterCard) {
+            await Effects.showCharacterCard(
+                node.characterCard.name,
+                node.characterCard.nameEn,
+                node.characterCard.source
+            );
+        }
+
+        // 全屏文字
+        if (node.fullscreen) {
+            await Effects.showFullscreenText(node.fullscreen, node.fullscreenDuration || 3000);
+        }
+
+        // 音效
+        if (node.sound === 'impact') AudioManager.playImpact();
+        if (node.sound === 'click') AudioManager.playClick();
+        if (node.bgm === 'tense') AudioManager.playTenseBGM();
+        if (node.bgm === 'dialogue') AudioManager.playDialogueBGM();
+        if (node.bgm === 'explore') AudioManager.playExplorationBGM();
 
         // 打字
         this.isTyping = true;
@@ -86,7 +111,6 @@ const DialogueEngine = {
         await Effects.typeText(textEl, node.text, speed);
         this.isTyping = false;
 
-        // 选项或继续
         if (node.choices && node.choices.length > 0) {
             this.isWaitingChoice = true;
             this.showChoices(node.choices);
@@ -103,17 +127,22 @@ const DialogueEngine = {
             const btn = document.createElement('div');
             btn.className = 'dialogue-choice';
 
-            if (choice.requiredDeaths && this.gameState.deathCount < choice.requiredDeaths) {
+            const locked = (choice.requiredDeaths && this.gameState.deathCount < choice.requiredDeaths)
+                || (choice.requiredFlag && !this.gameState.flags[choice.requiredFlag]);
+
+            if (locked) {
                 btn.classList.add('locked');
-                btn.setAttribute('data-lock-hint', `[需死亡 ${choice.requiredDeaths} 次]`);
-                btn.textContent = choice.text;
-            } else if (choice.requiredFlag && !this.gameState.flags[choice.requiredFlag]) {
-                btn.classList.add('locked');
-                btn.setAttribute('data-lock-hint', `[未解锁]`);
+                const hint = choice.requiredDeaths
+                    ? `[需死亡 ${choice.requiredDeaths} 次]`
+                    : `[未解锁]`;
+                btn.setAttribute('data-lock-hint', hint);
                 btn.textContent = choice.text;
             } else {
                 btn.textContent = choice.text;
-                btn.addEventListener('click', () => this.selectChoice(choice));
+                btn.addEventListener('click', () => {
+                    AudioManager.playClick();
+                    this.selectChoice(choice);
+                });
             }
 
             btn.style.opacity = '0';
@@ -130,19 +159,12 @@ const DialogueEngine = {
 
     selectChoice(choice) {
         this.isWaitingChoice = false;
-
-        if (choice.setFlag) {
-            this.gameState.flags[choice.setFlag] = true;
-        }
-
+        if (choice.setFlag) this.gameState.flags[choice.setFlag] = true;
         if (choice.bondChange) {
-            for (const [key, val] of Object.entries(choice.bondChange)) {
-                if (this.gameState.bonds[key] !== undefined) {
-                    this.gameState.bonds[key] += val;
-                }
+            for (const [k, v] of Object.entries(choice.bondChange)) {
+                if (this.gameState.bonds[k] !== undefined) this.gameState.bonds[k] += v;
             }
         }
-
         if (choice.effect === 'shake') Effects.shake();
         if (choice.effect === 'flash') Effects.flash();
 
@@ -151,14 +173,12 @@ const DialogueEngine = {
         } else {
             this.currentIndex++;
         }
-
         this.showCurrent();
     },
 
     advance() {
         if (this.isTyping) {
             Effects.skipTypewriter();
-
             setTimeout(() => {
                 const node = this.currentScript[this.currentIndex];
                 if (node && node.choices && node.choices.length > 0) {
@@ -171,10 +191,15 @@ const DialogueEngine = {
             }, 50);
             return;
         }
-
         if (this.isWaitingChoice) return;
 
-        this.currentIndex++;
+        const node = this.currentScript[this.currentIndex];
+        // 检查 next 跳转
+        if (node && node.next !== undefined && !node.choices) {
+            this.currentIndex = node.next;
+        } else {
+            this.currentIndex++;
+        }
         this.showCurrent();
     }
 };
