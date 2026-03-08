@@ -1,98 +1,40 @@
-const Game = {
-    state: null,
-
-    async init() {
-        SceneManager.init();
-        this.state = SaveManager.load() || SaveManager.defaultData();
-        DialogueEngine.init(this.state);
-        ExplorationEngine.init(this.state);
-        this.updateTitleScreen();
-
-        document.getElementById('title-screen').classList.add('active');
-        SceneManager.currentScreen = document.getElementById('title-screen');
-        this.bindMenuEvents();
-        this.bindFirstClick();
-    },
-
-    updateTitleScreen() {
-        Effects.setDeathCounter(this.state.deathCount);
-        const btn = document.getElementById('btn-continue');
-        if (btn) btn.disabled = !this.state.flags.awakening_complete;
-    },
-
-    bindMenuEvents() {
-        document.querySelectorAll('.menu-item').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                AudioManager.playClick();
-                switch (btn.dataset.action) {
-                    case 'new-game': await this.startNewGame(); break;
-                    case 'continue': await this.continueGame(); break;
-                    case 'death-memory': this.showDeathMemories(); break;
-                    case 'settings': Effects.notify('设定 — 开发中', 1500); break;
-                }
-            });
-        });
-    },
-
-    bindFirstClick() {
-        const handler = () => {
-            AudioManager.init();
-            AudioManager.playCicada();
-            AudioManager.playCRTHum();
-            AudioManager.playWind();
-            AudioManager.playTitleBGM();
-            document.removeEventListener('click', handler);
-            document.removeEventListener('keydown', handler);
-        };
-        document.addEventListener('click', handler);
-        document.addEventListener('keydown', handler);
-    },
-
-    async startNewGame() {
-        this.state = SaveManager.createNew();
-        DialogueEngine.gameState = this.state;
-        ExplorationEngine.init(this.state);
-
-        await Effects.showChapterCard('CHAPTER 01', '世紀末の異邦人', '1999.7.13 — 蝉在叫。石头在山脚。');
-
-        await DialogueEngine.play(Chapter1.awakening, () => this.onAwakeningComplete());
-    },
-
-    async continueGame() {
-        if (!this.state?.flags.awakening_complete) { await this.startNewGame(); return; }
-        DialogueEngine.gameState = this.state;
-        ExplorationEngine.init(this.state);
-        await ExplorationEngine.enter(this.state.currentLocation);
-    },
-
-    async onAwakeningComplete() {
-        this.state.flags.awakening_complete = true;
-        this.state.currentScene = 'exploration';
-        this.state.timeOfDay = 'day';
-        this.state.dayIndex = 0;
-        this.state.unlockedLocations = ['teibow', 'vendingMachine', 'school'];
-        SaveManager.save(this.state);
-
-        await Effects.showFullscreenText('蝉在叫。太阳不会落。<br>你开始推石头。', 2500);
-        await ExplorationEngine.enter('teibow');
-    },
-
-    showDeathMemories() {
-        if (!this.state.deathMemories?.length) { Effects.notify('死亡记忆为空', 2000); return; }
-        Effects.notify(`死亡记忆: ${this.state.deathMemories.length} 件`, 2000);
-    },
-
-    async handleDeath(memory = '未记录') {
-        this.state = SaveManager.deathReset(this.state, {
-            scene: this.state.currentScene, location: this.state.currentLocation,
-            memory, timestamp: Date.now()
-        });
-        DialogueEngine.gameState = this.state;
-        ExplorationEngine.init(this.state);
-        await Transitions.deathReset(this.state.deathCount);
-        this.updateTitleScreen();
-        await SceneManager.switchTo('title-screen', 'fade');
-    }
-};
-
-document.addEventListener('DOMContentLoaded', () => Game.init());
+#battle-screen{background:var(--color-navy);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.battle-content{position:relative;z-index:var(--z-content);width:100%;height:100%;max-width:900px;margin:0 auto;display:flex;flex-direction:column;padding:var(--space-lg)}
+.battle-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:var(--space-md);border-bottom:1px solid rgba(245,240,232,0.08)}
+.battle-actor{text-align:center;min-width:180px}
+.battle-actor-name{font-family:var(--font-mincho);font-size:1rem;font-weight:600;color:var(--color-paper);letter-spacing:.15em;margin-bottom:var(--space-xs)}
+.battle-actor-source{font-family:var(--font-mono);font-size:.55rem;color:var(--color-amber);letter-spacing:.2em;margin-bottom:var(--space-sm)}
+.battle-logos-bar{width:100%;height:6px;background:rgba(245,240,232,0.1);border-radius:3px;overflow:hidden;margin-top:var(--space-xs)}
+.battle-logos-fill{height:100%;border-radius:3px;transition:width .5s var(--ease-out-expo)}
+.battle-logos-fill.player{background:linear-gradient(90deg,var(--color-amber-dim),var(--color-amber))}
+.battle-logos-fill.enemy{background:linear-gradient(90deg,#c62828,var(--color-red))}
+.battle-logos-text{font-family:var(--font-mono);font-size:.6rem;color:var(--color-text-faint);margin-top:2px}
+.battle-vs{font-family:var(--font-mono);font-size:.7rem;color:rgba(245,240,232,0.2);letter-spacing:.3em;align-self:center;padding:0 var(--space-md)}
+.battle-stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.battle-narration{font-family:var(--font-gothic);font-size:.95rem;font-weight:300;color:var(--color-paper);line-height:2;letter-spacing:.05em;text-align:center;max-width:600px;white-space:pre-wrap}
+.battle-declaration{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--font-mincho);font-size:clamp(1.2rem,3.5vw,2rem);font-weight:700;color:var(--color-amber);letter-spacing:.2em;text-align:center;opacity:0;white-space:nowrap;text-shadow:0 0 30px rgba(255,183,3,0.3);pointer-events:none}
+.battle-declaration.active{animation:da 1.5s var(--ease-out-expo) forwards}
+@keyframes da{0%{opacity:0;transform:translate(-50%,-50%) scale(.8);letter-spacing:.5em}30%{opacity:1}100%{opacity:.9;transform:translate(-50%,-50%) scale(1);letter-spacing:.2em}}
+.battle-actions{border-top:1px solid rgba(245,240,232,0.08);padding-top:var(--space-md)}
+.battle-actions-label{font-family:var(--font-mono);font-size:.5rem;letter-spacing:.3em;color:var(--color-text-faint);margin-bottom:var(--space-sm);text-transform:uppercase}
+.battle-actions-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-xs)}
+.battle-action-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:var(--space-sm) var(--space-xs);font-family:var(--font-gothic);font-size:.8rem;color:var(--color-paper);background:rgba(245,240,232,0.04);border:1px solid rgba(245,240,232,0.1);border-radius:3px;transition:all var(--duration-fast) var(--ease-out-expo);cursor:pointer;letter-spacing:.08em}
+.battle-action-btn:hover{background:rgba(230,57,70,0.1);border-color:var(--color-red);color:var(--color-red);transform:translateY(-2px)}
+.battle-action-btn:active{transform:translateY(0) scale(.98)}
+.battle-action-btn.disabled{opacity:.3;pointer-events:none}
+.battle-action-cost{font-family:var(--font-mono);font-size:.5rem;color:var(--color-amber);opacity:.7}
+.battle-hand{display:flex;gap:var(--space-xs);margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid rgba(245,240,232,0.05);overflow-x:auto}
+.quote-card{flex-shrink:0;width:100px;padding:var(--space-sm);background:rgba(245,240,232,0.03);border:1px solid rgba(245,240,232,0.08);border-radius:3px;cursor:pointer;transition:all var(--duration-fast) var(--ease-out-expo)}
+.quote-card:hover{border-color:var(--color-amber);background:rgba(255,183,3,0.05);transform:translateY(-4px)}
+.quote-card-source{font-family:var(--font-mono);font-size:.45rem;color:var(--color-amber);letter-spacing:.15em;margin-bottom:2px}
+.quote-card-name{font-family:var(--font-mincho);font-size:.75rem;color:var(--color-paper);margin-bottom:var(--space-xs)}
+.quote-card-effect{font-family:var(--font-gothic);font-size:.5rem;color:var(--color-text-faint);line-height:1.4}
+.quote-card-cost{font-family:var(--font-mono);font-size:.45rem;color:var(--color-amber);margin-top:var(--space-xs);opacity:.6}
+.battle-result{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,10,10,0.9);z-index:var(--z-modal);opacity:0;transition:opacity .5s;pointer-events:none}
+.battle-result.visible{opacity:1;pointer-events:auto}
+.battle-result-title{font-family:var(--font-mincho);font-size:1.5rem;font-weight:700;letter-spacing:.3em;margin-bottom:var(--space-lg)}
+.battle-result-title.win{color:var(--color-amber)}.battle-result-title.lose{color:var(--color-red)}
+.battle-result-text{font-family:var(--font-gothic);font-size:.85rem;color:var(--color-paper);opacity:.7;margin-bottom:var(--space-lg);text-align:center;line-height:1.8;white-space:pre-wrap}
+.battle-result-btn{font-family:var(--font-gothic);font-size:.85rem;color:var(--color-paper);padding:var(--space-sm) var(--space-lg);border:1px solid rgba(245,240,232,0.2);border-radius:2px;cursor:pointer;transition:all var(--duration-fast) var(--ease-out-expo);letter-spacing:.1em}
+.battle-result-btn:hover{border-color:var(--color-amber);color:var(--color-amber)}
+.battle-turn{font-family:var(--font-mono);font-size:.5rem;letter-spacing:.2em;color:var(--color-text-faint);text-align:center;padding:var(--space-xs) 0}
