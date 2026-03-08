@@ -56,16 +56,43 @@ img {
     opacity: 0;
     visibility: hidden;
     transition: opacity var(--duration-slow) var(--ease-in-out),
-                visibility var(--duration-slow) var(--ease-in-out);
+                visibility 0s linear var(--duration-slow);
+    z-index: 0;
 }
 
 .screen.active {
     opacity: 1;
     visibility: visible;
     z-index: var(--z-content);
+    transition: opacity var(--duration-slow) var(--ease-in-out),
+                visibility 0s linear 0s;
 }
 
-/* —— 滚动条隐藏 —— */
+/* —— 滚动条美化 —— */
 ::-webkit-scrollbar {
-    display: none;
+    width: 3px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(43, 43, 43, 0.15);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(43, 43, 43, 0.3);
+}
+
+/* —— 全局淡入动画类 —— */
+.fade-in-up {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fadeInUp 0.6s var(--ease-out-expo) forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
