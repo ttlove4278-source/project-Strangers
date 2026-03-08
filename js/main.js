@@ -6,6 +6,7 @@ const Game = {
         this.state = SaveManager.load() || SaveManager.defaultData();
         DialogueEngine.init(this.state);
         ExplorationEngine.init(this.state);
+        BattleEngine.init(this.state);
         this.updateTitleScreen();
 
         document.getElementById('title-screen').classList.add('active');
@@ -52,9 +53,9 @@ const Game = {
         this.state = SaveManager.createNew();
         DialogueEngine.gameState = this.state;
         ExplorationEngine.init(this.state);
+        BattleEngine.init(this.state);
 
         await Effects.showChapterCard('CHAPTER 01', '世紀末の異邦人', '1999.7.13 — 蝉在叫。石头在山脚。');
-
         await DialogueEngine.play(Chapter1.awakening, () => this.onAwakeningComplete());
     },
 
@@ -62,6 +63,7 @@ const Game = {
         if (!this.state?.flags.awakening_complete) { await this.startNewGame(); return; }
         DialogueEngine.gameState = this.state;
         ExplorationEngine.init(this.state);
+        BattleEngine.init(this.state);
         await ExplorationEngine.enter(this.state.currentLocation);
     },
 
@@ -89,6 +91,7 @@ const Game = {
         });
         DialogueEngine.gameState = this.state;
         ExplorationEngine.init(this.state);
+        BattleEngine.init(this.state);
         await Transitions.deathReset(this.state.deathCount);
         this.updateTitleScreen();
         await SceneManager.switchTo('title-screen', 'fade');
