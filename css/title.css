@@ -1,6 +1,5 @@
 /* ============================
    标题画面
-   世紀末異邦人 · 1999 · 夏
    ============================ */
 
 #title-screen {
@@ -11,7 +10,6 @@
     overflow: hidden;
 }
 
-/* —— 主内容容器 —— */
 .title-content {
     position: relative;
     z-index: var(--z-content);
@@ -47,6 +45,7 @@
 
 .date-temp {
     color: var(--color-red);
+    font-weight: 500;
 }
 
 /* —— 主标题 —— */
@@ -71,6 +70,7 @@
     transform: translateY(20px);
     animation: char-rise 0.8s var(--ease-out-expo) calc(var(--i) * 0.12s + 0.8s) forwards;
     position: relative;
+    display: inline-block;
 }
 
 .title-jp .char::after {
@@ -172,7 +172,6 @@
     transform: scale(0.98);
 }
 
-/* 禁用状态 */
 .menu-item:disabled {
     opacity: 0.3;
     pointer-events: none;
@@ -262,14 +261,8 @@
 
 /* —— 动画关键帧 —— */
 @keyframes char-rise {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes underline-grow {
