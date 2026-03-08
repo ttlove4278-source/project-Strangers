@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>世紀末異邦人 — Strangers at the End of the Century</title>
+
+    <!-- 字体加载 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@200;300;400;500;600;700;900&family=Noto+Sans+JP:wght@100;300;400;500;700&family=Zen+Kurenaido&family=Source+Code+Pro:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <!-- 样式 -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/effects.css">
+    <link rel="stylesheet" href="css/title.css">
+    <link rel="stylesheet" href="css/dialogue.css">
+    <link rel="stylesheet" href="css/exploration.css">
+    <link rel="stylesheet" href="css/battle.css">
+</head>
+<body>
+
+    <!-- ===== 标题画面 ===== -->
+    <div id="title-screen" class="screen active">
+
+        <!-- CRT 扫描线覆盖层 -->
+        <div class="crt-overlay"></div>
+
+        <!-- 热浪扭曲层 -->
+        <div class="heat-haze"></div>
+
+        <!-- 噪点层 -->
+        <div class="noise-layer"></div>
+
+        <!-- 主内容 -->
+        <div class="title-content">
+
+            <!-- 日期标记 -->
+            <div class="title-date">
+                <span class="date-text">1999.7.13</span>
+                <span class="date-separator">—</span>
+                <span class="date-temp">37.5℃</span>
+            </div>
+
+            <!-- 主标题 -->
+            <div class="title-main">
+                <div class="title-jp">
+                    <span class="char" style="--i:0">世</span>
+                    <span class="char" style="--i:1">紀</span>
+                    <span class="char" style="--i:2">末</span>
+                    <span class="char" style="--i:3">異</span>
+                    <span class="char" style="--i:4">邦</span>
+                    <span class="char" style="--i:5">人</span>
+                </div>
+                <div class="title-en">
+                    <span>STRANGERS AT THE END OF THE CENTURY</span>
+                </div>
+                <div class="title-sub">
+                    <span>— 推石头的人们 —</span>
+                </div>
+            </div>
+
+            <!-- 菜单 -->
+            <nav class="title-menu">
+                <button class="menu-item" data-action="new-game">
+                    <span class="menu-marker">▸</span>
+                    <span class="menu-text">开始推石头</span>
+                </button>
+                <button class="menu-item" data-action="continue" id="btn-continue">
+                    <span class="menu-marker">▸</span>
+                    <span class="menu-text">继续</span>
+                </button>
+                <button class="menu-item" data-action="death-memory">
+                    <span class="menu-marker">▸</span>
+                    <span class="menu-text">死亡记忆</span>
+                </button>
+                <button class="menu-item" data-action="settings">
+                    <span class="menu-marker">▸</span>
+                    <span class="menu-text">设定</span>
+                </button>
+            </nav>
+
+            <!-- 死亡计数器 -->
+            <div class="death-counter">
+                <div class="counter-label">DEATH COUNT</div>
+                <div class="counter-number">
+                    <span class="digit" id="digit-0">0</span>
+                    <span class="digit" id="digit-1">0</span>
+                    <span class="digit" id="digit-2">0</span>
+                </div>
+            </div>
+
+            <!-- 底部引用 -->
+            <div class="title-quote">
+                <p>「我们必须想象西西弗是幸福的。」</p>
+                <cite>— 阿尔贝·加缪《西西弗神话》</cite>
+            </div>
+
+        </div>
+
+        <!-- 蝉鸣提示 -->
+        <div class="cicada-hint">
+            <span>蝉在叫。点击任意处。</span>
+        </div>
+
+    </div>
+
+    <!-- ===== 过渡画面 ===== -->
+    <div id="transition-screen" class="screen">
+        <div class="crt-shutdown"></div>
+    </div>
+
+    <!-- ===== 探索画面（占位） ===== -->
+    <div id="exploration-screen" class="screen">
+        <div class="crt-overlay"></div>
+        <div class="exploration-content">
+
+            <!-- 顶部状态栏 -->
+            <header class="status-bar">
+                <div class="status-date">
+                    <span id="current-date">1999.7.13 (火)</span>
+                    <span id="current-time">15:42</span>
+                </div>
+                <div class="status-temp">
+                    <span id="current-temp">37.5℃</span>
+                </div>
+            </header>
+
+            <!-- 地点标题 -->
+            <div class="location-title">
+                <h2 id="location-name">堤防</h2>
+                <p id="location-desc">蝉鸣不止。沥青路面扭曲着空气。</p>
+            </div>
+
+            <!-- 叙述区 -->
+            <div class="narrative-area" id="narrative-area">
+                <p class="narrative-text" id="narrative-text"></p>
+            </div>
+
+            <!-- 选项区 -->
+            <div class="choices-area" id="choices-area"></div>
+
+            <!-- 底部信息栏 -->
+            <footer class="bottom-bar">
+                <div class="logos-bar">
+                    <span class="logos-label">LOGOS</span>
+                    <div class="logos-gauge">
+                        <div class="logos-fill" id="logos-fill" style="width: 42%"></div>
+                    </div>
+                    <span class="logos-value" id="logos-value">4.2 赫</span>
+                </div>
+                <div class="death-count-small">
+                    <span>DEATH:</span>
+                    <span id="death-count-display">327</span>
+                </div>
+            </footer>
+
+        </div>
+    </div>
+
+    <!-- ===== 对话画面（占位） ===== -->
+    <div id="dialogue-screen" class="screen">
+        <div class="crt-overlay"></div>
+        <div class="dialogue-content">
+
+            <div class="dialogue-speaker" id="dialogue-speaker"></div>
+            <div class="dialogue-text-area">
+                <p class="dialogue-text" id="dialogue-text"></p>
+            </div>
+            <div class="dialogue-choices" id="dialogue-choices"></div>
+            <div class="dialogue-continue" id="dialogue-continue">
+                <span>▸</span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== 战斗画面（占位） ===== -->
+    <div id="battle-screen" class="screen">
+        <div class="crt-overlay"></div>
+        <div class="battle-content">
+            <p style="color: var(--color-text); font-family: var(--font-gothic); text-align: center; margin-top: 40vh;">
+                [ 战斗系统 — Phase 3 开发 ]
+            </p>
+        </div>
+    </div>
+
+    <!-- 脚本 -->
+    <script src="js/engine/save.js"></script>
+    <script src="js/engine/scene-manager.js"></script>
+    <script src="js/ui/effects.js"></script>
+    <script src="js/ui/audio.js"></script>
+    <script src="js/ui/transitions.js"></script>
+    <script src="js/engine/dialogue.js"></script>
+    <script src="js/data/chapters/chapter1.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+</html>
