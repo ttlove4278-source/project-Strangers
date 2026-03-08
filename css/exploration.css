@@ -40,11 +40,12 @@
 
 .status-temp {
     color: var(--color-red);
+    font-weight: 500;
 }
 
 /* —— 地点标题 —— */
 .location-title {
-    padding: var(--space-lg) 0;
+    padding: var(--space-lg) 0 var(--space-md);
     border-bottom: 1px solid rgba(43, 43, 43, 0.06);
 }
 
@@ -57,7 +58,7 @@
     margin-bottom: var(--space-xs);
 }
 
-.location-title p {
+.location-desc {
     font-family: var(--font-gothic);
     font-size: 0.75rem;
     font-weight: 300;
@@ -70,6 +71,7 @@
     flex: 1;
     overflow-y: auto;
     padding: var(--space-lg) 0;
+    scroll-behavior: smooth;
 }
 
 .narrative-text {
@@ -81,15 +83,94 @@
     letter-spacing: 0.05em;
 }
 
-/* —— 选项区 —— */
-.choices-area {
-    padding: var(--space-md) 0 var(--space-lg);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
+/* 叙述段落 */
+.narrative-paragraph {
+    margin-bottom: var(--space-md);
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fadeInUp 0.5s var(--ease-out-expo) forwards;
 }
 
-.choice-btn {
+/* —— 动作选项区 —— */
+.choices-area {
+    padding: var(--space-md) 0 var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-top: 1px solid rgba(43, 43, 43, 0.08);
+}
+
+.choices-area:empty {
+    display: none;
+}
+
+/* —— 地点导航按钮 —— */
+.nav-area {
+    padding: var(--space-sm) 0 var(--space-md);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    border-top: 1px solid rgba(43, 43, 43, 0.08);
+}
+
+.nav-area:empty {
+    display: none;
+}
+
+.nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    font-family: var(--font-gothic);
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--color-text-dim);
+    letter-spacing: 0.1em;
+    border: 1px solid rgba(43, 43, 43, 0.12);
+    border-radius: 2px;
+    transition: all var(--duration-fast) var(--ease-out-expo);
+    background: transparent;
+}
+
+.nav-btn:hover {
+    color: var(--color-text);
+    border-color: var(--color-red);
+    background: var(--color-red-glow);
+}
+
+.nav-btn .nav-icon {
+    font-size: 0.6rem;
+    opacity: 0.5;
+}
+
+.nav-btn.has-event::after {
+    content: '!';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: var(--color-white);
+    background: var(--color-red);
+    border-radius: 50%;
+    margin-left: var(--space-xs);
+}
+
+.nav-btn.new::after {
+    content: 'NEW';
+    font-size: 0.45rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
+    width: auto;
+    padding: 0 5px;
+    border-radius: 2px;
+}
+
+/* —— 行动按钮（通用） —— */
+.action-btn {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
@@ -98,33 +179,55 @@
     font-size: 0.85rem;
     font-weight: 400;
     color: var(--color-text);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     background: transparent;
-    border: 1px solid transparent;
+    border: none;
     border-radius: 2px;
     transition: all var(--duration-fast) var(--ease-out-expo);
     text-align: left;
+    width: 100%;
     position: relative;
 }
 
-.choice-btn::before {
+.action-btn::before {
     content: '▸';
     color: var(--color-red);
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     opacity: 0;
-    transform: translateX(-4px);
+    transform: translateX(-6px);
     transition: all var(--duration-fast) var(--ease-out-expo);
+    flex-shrink: 0;
 }
 
-.choice-btn:hover {
+.action-btn:hover {
     background: rgba(230, 57, 70, 0.04);
-    border-color: rgba(230, 57, 70, 0.15);
     color: var(--color-red);
+    padding-left: calc(var(--space-md) + 4px);
 }
 
-.choice-btn:hover::before {
+.action-btn:hover::before {
     opacity: 1;
     transform: translateX(0);
+}
+
+.action-btn:active {
+    transform: scale(0.99);
+}
+
+/* 强调行动 */
+.action-btn.important {
+    color: var(--color-red);
+    font-weight: 500;
+}
+
+.action-btn.important::before {
+    opacity: 0.5;
+}
+
+/* 锁定行动 */
+.action-btn.locked {
+    opacity: 0.3;
+    pointer-events: none;
 }
 
 /* —— 底部信息栏 —— */
@@ -134,6 +237,7 @@
     align-items: center;
     padding: var(--space-md) 0;
     border-top: 1px solid rgba(43, 43, 43, 0.1);
+    flex-shrink: 0;
 }
 
 .logos-bar {
@@ -168,7 +272,7 @@
     font-family: var(--font-mono);
     font-size: 0.65rem;
     color: var(--color-amber);
-    min-width: 50px;
+    min-width: 55px;
 }
 
 .death-count-small {
@@ -181,4 +285,14 @@
 .death-count-small span:last-child {
     color: var(--color-red);
     font-weight: 500;
+}
+
+/* —— 中间提示文字 —— */
+.location-event-hint {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--color-text-faint);
+    letter-spacing: 0.15em;
+    text-align: center;
+    padding: var(--space-sm) 0;
 }
